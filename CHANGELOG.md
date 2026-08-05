@@ -3,6 +3,14 @@
 Toutes les évolutions notables de ce projet sont documentées ici.
 Convention : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) + [semver](https://semver.org/lang/fr/).
 
+## [0.5.1] - 2026-08-05
+
+### Modifié
+- Libellés des objectifs sur le radar (vue par priorité) fortement agrandis
+  (13/16/14px → 24/30/26px), sans changer la taille ni le rayon du radar
+  lui-même. Interligne et largeur de wrap ajustés en conséquence pour éviter
+  le chevauchement entre lignes et entre labels voisins.
+
 ## [0.5.0] - 2026-08-05
 
 ### Ajouté

@@ -107,11 +107,11 @@ export function renderRadar(slotId, items, title) {
     if (items[i].fullLabel) {
       const shortLabel = items[i].label;
       const fullText = items[i].fullLabel;
-      const maxCharsPerLine = n <= 3 ? 18 : (n <= 4 ? 15 : (n <= 5 ? 13 : 11));
-      const maxLines = n <= 4 ? 6 : 5;
+      const maxCharsPerLine = n <= 3 ? 10 : (n <= 4 ? 8 : (n <= 5 ? 7 : 6));
+      const maxLines = n <= 4 ? 7 : 6;
       const lines = wrapLabel(fullText, maxCharsPerLine, maxLines);
       const valueText = items[i].value === null || items[i].value === undefined ? 'nr' : fmtPct(items[i].value);
-      const lineH = 15;
+      const lineH = 30;
       const nLines = lines.length + 2;
       const totalH = nLines * lineH;
       const startY = ly - (totalH / 2) + lineH;

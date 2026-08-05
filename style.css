@@ -310,9 +310,9 @@ main { padding: 2rem; }
 .radar-label { font-family: var(--font-body); font-size: 10px; fill: var(--gris-fonce); }
 .radar-label-major { font-family: var(--font-body); font-size: 12px; fill: var(--bleu-nuit); font-weight: 600; }
 .radar-tick-label { font-family: monospace; font-size: 9px; fill: var(--gris-moyen); }
-.radar-label-full { font-family: var(--font-body); font-size: 13px; fill: var(--gris-fonce); }
-.radar-label-full .radar-label-prefix { font-weight: 700; font-family: var(--font-display); font-size: 16px; fill: var(--or-cpage); }
-.radar-label-full .radar-label-value { font-family: monospace; font-weight: 700; fill: var(--bleu-nuit); font-size: 14px; }
+.radar-label-full { font-family: var(--font-body); font-size: 24px; fill: var(--gris-fonce); }
+.radar-label-full .radar-label-prefix { font-weight: 700; font-family: var(--font-display); font-size: 30px; fill: var(--or-cpage); }
+.radar-label-full .radar-label-value { font-family: monospace; font-weight: 700; fill: var(--bleu-nuit); font-size: 26px; }
 
 .tooltip {
   position: absolute;
