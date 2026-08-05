@@ -14,6 +14,13 @@
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* L'attribut hidden doit toujours gagner, même si un élément a par ailleurs
+   un display explicite (ex. display:flex sur .login-screen). Sans cette règle,
+   loginScreen.hidden = true en JS pose bien l'attribut, mais une règle CSS
+   d'auteur sur la même classe peut le rendre visuellement inopérant. */
+[hidden] { display: none !important; }
+
 body {
   font-family: var(--font-body);
   color: var(--anthracite);
