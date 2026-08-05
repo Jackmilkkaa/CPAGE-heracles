@@ -19,30 +19,44 @@ document.getElementById('toggle-password').addEventListener('click', () => {
 });
 
 // ----------------------------------------------------------------------------
-// Version et changelog — lus depuis Supabase, pas depuis GitHub.
-// Le repo est privé (§4.2 du cadre SDF Lab) : un fetch() anonyme vers
-// raw.githubusercontent.com échouerait. La table heracles.app_version est
-// mise à jour par l'assistant à chaque release poussée sur GitHub.
+// Version et changelog — lus en direct depuis le CHANGELOG.md sur GitHub.
+// Le repo est désormais public : un fetch() anonyme vers
+// raw.githubusercontent.com fonctionne. Pas de copie figée codée en dur,
+// la source de vérité reste le fichier du repo.
 // ----------------------------------------------------------------------------
+const CHANGELOG_RAW_URL = 'https://raw.githubusercontent.com/Jackmilkkaa/CPAGE-heracles/main/CHANGELOG.md';
+
 async function chargerVersion() {
-  const { data, error } = await supabase
-    .from('app_version')
-    .select('version, date_release, changelog_extrait, changelog_url')
-    .single();
-
   const footerVersion = document.getElementById('footer-version');
-  if (error || !data) {
-    footerVersion.textContent = '?';
-    return;
-  }
-  footerVersion.textContent = data.version;
-
   const panel = document.getElementById('changelog-panel');
-  panel.innerHTML = `
-    <strong>v${data.version}</strong> · ${data.date_release}<br>
-    ${data.changelog_extrait || ''}<br>
-    <a href="${data.changelog_url}" target="_blank" rel="noopener">Changelog complet sur GitHub</a>
-  `;
+
+  try {
+    const res = await fetch(CHANGELOG_RAW_URL, { cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const md = await res.text();
+
+    // Première entrée de version : "## [x.y.z] - AAAA-MM-JJ" jusqu'à la suivante
+    const match = md.match(/##\s*\[([^\]]+)\]\s*-\s*([\d-]+)\s*([\s\S]*?)(?=\n##\s*\[|$)/);
+    if (!match) throw new Error('Format de changelog non reconnu');
+
+    const [, version, date, corps] = match;
+    footerVersion.textContent = version;
+    panel.innerHTML = `
+      <strong>v${escapeHtml(version)}</strong> · ${escapeHtml(date)}
+      <pre class="changelog-body">${escapeHtml(corps.trim())}</pre>
+      <a href="https://github.com/Jackmilkkaa/CPAGE-heracles/blob/main/CHANGELOG.md" target="_blank" rel="noopener">Changelog complet sur GitHub</a>
+    `;
+  } catch (e) {
+    console.error('Erreur chargement changelog', e);
+    footerVersion.textContent = '?';
+    panel.innerHTML = '<p>Changelog indisponible pour le moment.</p>';
+  }
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
 }
 
 document.getElementById('version-btn').addEventListener('click', () => {
@@ -54,7 +68,6 @@ document.getElementById('version-btn').addEventListener('click', () => {
 
 async function render() {
   const session = await getSession();
-  chargerVersion(); // retenté à chaque render : échoue avant connexion (RLS), réussit après
 
   if (!session) {
     loginScreen.hidden = false;
@@ -113,3 +126,4 @@ loginForm.addEventListener('submit', async (e) => {
 });
 
 render();
+chargerVersion();

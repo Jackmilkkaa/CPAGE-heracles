@@ -3,6 +3,17 @@
 Toutes les évolutions notables de ce projet sont documentées ici.
 Convention : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) + [semver](https://semver.org/lang/fr/).
 
+## [0.2.1] - 2026-08-05
+
+### Modifié
+- Le footer lit désormais le changelog en direct depuis `CHANGELOG.md` sur
+  GitHub (`raw.githubusercontent.com`), plutôt que depuis la table Supabase
+  `heracles.app_version`. Ce chemin n'était pas viable tant que le repo était
+  privé (fetch anonyme bloqué), il l'est devenu depuis que le repo est passé
+  public. La table `app_version` reste en base mais n'est plus utilisée par
+  le frontend ; à supprimer dans une prochaine migration si on ne s'en sert
+  plus.
+
 ## [0.2.0] - 2026-08-05
 
 ### Ajouté

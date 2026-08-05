@@ -117,3 +117,10 @@ main { padding: 2rem; max-width: 600px; margin: 0 auto; }
   text-align: left;
 }
 .changelog-panel a { color: var(--bleu-cpage); }
+.changelog-body {
+  white-space: pre-wrap;
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  margin: 0.5rem 0;
+  color: var(--anthracite);
+}
