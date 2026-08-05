@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Héraclès · Pilotage</title>
+<link rel="stylesheet" href="style.css">
+<!-- Client Supabase officiel, via CDN, pas de bundler -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="app-title">
+    <span class="h1">Héraclès</span>
+    <span class="subtitle">Pilotage · v<span id="app-version">0.1.0</span></span>
+  </div>
+  <div id="user-zone" class="user-zone"></div>
+</header>
+
+<main id="app-main">
+  <!-- Écran de connexion, remplacé dynamiquement une fois authentifié -->
+  <div id="login-screen" class="login-screen">
+    <form id="login-form" class="login-form">
+      <h2>Connexion</h2>
+      <label>
+        Email
+        <input type="email" id="login-email" required autocomplete="email">
+      </label>
+      <label>
+        Mot de passe
+        <input type="password" id="login-password" required autocomplete="current-password">
+      </label>
+      <button type="submit" class="btn btn-primary">Se connecter</button>
+      <p id="login-error" class="login-error" hidden></p>
+    </form>
+  </div>
+
+  <div id="content-screen" class="content-screen" hidden>
+    <p>Connecté. Chargement des données du plan...</p>
+    <div id="orientations-preview"></div>
+  </div>
+</main>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>
