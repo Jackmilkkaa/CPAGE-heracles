@@ -6,8 +6,55 @@ const userZone = document.getElementById('user-zone');
 const loginForm = document.getElementById('login-form');
 const loginError = document.getElementById('login-error');
 
+// ----------------------------------------------------------------------------
+// Bascule affichage / masquage du mot de passe
+// ----------------------------------------------------------------------------
+document.getElementById('toggle-password').addEventListener('click', () => {
+  const input = document.getElementById('login-password');
+  const btn = document.getElementById('toggle-password');
+  const showing = input.type === 'text';
+  input.type = showing ? 'password' : 'text';
+  btn.textContent = showing ? 'Afficher' : 'Masquer';
+  btn.setAttribute('aria-label', showing ? 'Afficher le mot de passe' : 'Masquer le mot de passe');
+});
+
+// ----------------------------------------------------------------------------
+// Version et changelog — lus depuis Supabase, pas depuis GitHub.
+// Le repo est privé (§4.2 du cadre SDF Lab) : un fetch() anonyme vers
+// raw.githubusercontent.com échouerait. La table heracles.app_version est
+// mise à jour par l'assistant à chaque release poussée sur GitHub.
+// ----------------------------------------------------------------------------
+async function chargerVersion() {
+  const { data, error } = await supabase
+    .from('app_version')
+    .select('version, date_release, changelog_extrait, changelog_url')
+    .single();
+
+  const footerVersion = document.getElementById('footer-version');
+  if (error || !data) {
+    footerVersion.textContent = '?';
+    return;
+  }
+  footerVersion.textContent = data.version;
+
+  const panel = document.getElementById('changelog-panel');
+  panel.innerHTML = `
+    <strong>v${data.version}</strong> · ${data.date_release}<br>
+    ${data.changelog_extrait || ''}<br>
+    <a href="${data.changelog_url}" target="_blank" rel="noopener">Changelog complet sur GitHub</a>
+  `;
+}
+
+document.getElementById('version-btn').addEventListener('click', () => {
+  const panel = document.getElementById('changelog-panel');
+  panel.hidden = !panel.hidden;
+});
+
+// ----------------------------------------------------------------------------
+
 async function render() {
   const session = await getSession();
+  chargerVersion(); // retenté à chaque render : échoue avant connexion (RLS), réussit après
 
   if (!session) {
     loginScreen.hidden = false;

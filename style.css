@@ -68,3 +68,52 @@ main { padding: 2rem; max-width: 600px; margin: 0 auto; }
 .login-error { color: var(--bordeaux); font-size: 0.85rem; }
 
 .content-screen { background: white; border: 1px solid var(--gris-clair); border-radius: 4px; padding: 1.5rem; }
+
+/* Bascule affichage/masquage du mot de passe */
+.password-wrap { position: relative; }
+.password-wrap input { padding-right: 70px; width: 100%; }
+#toggle-password {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--bleu-cpage);
+  font-size: 0.72rem;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  padding: 6px 8px;
+}
+#toggle-password:hover { color: var(--bleu-nuit); text-decoration: underline; }
+
+/* Footer version + changelog */
+.app-footer {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 0 2rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+.version-btn {
+  background: none;
+  border: none;
+  color: var(--gris-clair);
+  font-size: 0.75rem;
+  font-family: monospace;
+  cursor: pointer;
+}
+.version-btn:hover { color: var(--bleu-cpage); }
+.changelog-panel {
+  background: white;
+  border: 1px solid var(--gris-clair);
+  border-radius: 4px;
+  padding: 1rem;
+  font-size: 0.8rem;
+  color: var(--anthracite);
+  width: 100%;
+  text-align: left;
+}
+.changelog-panel a { color: var(--bleu-cpage); }

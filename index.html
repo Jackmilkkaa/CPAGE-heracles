@@ -13,7 +13,7 @@
 <header class="app-header">
   <div class="app-title">
     <span class="h1">Héraclès</span>
-    <span class="subtitle">Pilotage · v<span id="app-version">0.1.0</span></span>
+    <span class="subtitle">Pilotage</span>
   </div>
   <div id="user-zone" class="user-zone"></div>
 </header>
@@ -29,7 +29,10 @@
       </label>
       <label>
         Mot de passe
-        <input type="password" id="login-password" required autocomplete="current-password">
+        <div class="password-wrap">
+          <input type="password" id="login-password" required autocomplete="current-password">
+          <button type="button" id="toggle-password" aria-label="Afficher le mot de passe">Afficher</button>
+        </div>
       </label>
       <button type="submit" class="btn btn-primary">Se connecter</button>
       <p id="login-error" class="login-error" hidden></p>
@@ -41,6 +44,11 @@
     <div id="orientations-preview"></div>
   </div>
 </main>
+
+<footer class="app-footer">
+  <button id="version-btn" class="version-btn">v<span id="footer-version">…</span></button>
+  <div id="changelog-panel" class="changelog-panel" hidden></div>
+</footer>
 
 <script type="module" src="app.js"></script>
 </body>
