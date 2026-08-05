@@ -3,6 +3,17 @@
 Toutes les évolutions notables de ce projet sont documentées ici.
 Convention : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) + [semver](https://semver.org/lang/fr/).
 
+## [0.2.2] - 2026-08-05
+
+### Corrigé
+- Footer positionné en fixe en bas à droite de la fenêtre, au lieu d'être
+  simplement aligné à droite dans la colonne centrale de contenu (donnait
+  l'impression d'être mal placé sur un écran large).
+- Champs email et mot de passe de l'écran de connexion sans attribut `name` :
+  invisibles pour certains gestionnaires de mots de passe (KeePass notamment),
+  qui s'appuient sur `name` en plus de `autocomplete` pour proposer les
+  identifiants déjà enregistrés.
+
 ## [0.2.1] - 2026-08-05
 
 ### Modifié

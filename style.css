@@ -89,13 +89,15 @@ main { padding: 2rem; max-width: 600px; margin: 0 auto; }
 
 /* Footer version + changelog */
 .app-footer {
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 0 2rem 2rem;
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  z-index: 50;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   gap: 0.5rem;
+  max-width: 320px;
 }
 .version-btn {
   background: none;
