@@ -3,6 +3,7 @@ import { chargerPlanComplet } from './data.js';
 import { avancementPriorite, avancementAxe, avancementOrientation, avancementGlobal, fmtPct } from './calc.js';
 import { renderRadar, renderGauges } from './radar.js';
 import { escapeHtml } from './utils.js';
+import { renderVuePriorite } from './vuePriorite.js';
 
 const loginScreen = document.getElementById('login-screen');
 const contentScreen = document.getElementById('content-screen');
@@ -103,9 +104,9 @@ loginForm.addEventListener('submit', async (e) => {
 });
 
 // ----------------------------------------------------------------------------
-// Navigation entre vues
+// Navigation entre vues + chargement des données
 // ----------------------------------------------------------------------------
-let currentView = 'overview'; // 'overview' | 'orientation'
+let currentView = 'overview'; // 'overview' | 'orientation' | 'priorite'
 let planTree = null;
 
 document.querySelector('.view-nav').addEventListener('click', (e) => {
@@ -120,6 +121,7 @@ function renderCurrentView() {
   if (!planTree) return;
   if (currentView === 'overview') renderVueEnsemble();
   else if (currentView === 'orientation') renderVueOrientation();
+  else if (currentView === 'priorite') renderVuePriorite(planTree, rafraichirDonnees);
 }
 
 async function chargerPlanEtAfficher() {
@@ -134,6 +136,15 @@ async function chargerPlanEtAfficher() {
     return;
   }
 
+  renderCurrentView();
+}
+
+// Rappelée après chaque écriture (KR, projet, impact, override...) : recharge
+// tout depuis Supabase, puis ré-affiche la vue courante avec les données à
+// jour. Plus simple et plus sûr qu'une mise à jour locale fine de l'arbre en
+// mémoire, au prix d'un aller-retour réseau par modification.
+async function rafraichirDonnees() {
+  planTree = await chargerPlanComplet();
   renderCurrentView();
 }
 

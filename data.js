@@ -27,7 +27,7 @@ export async function chargerPlanComplet() {
     supabase.from('objectifs').select('*'),
     supabase.from('resultats_cles').select('*'),
     supabase.from('impacts').select('*'),
-    supabase.from('projets').select('id, statut, avancement_pct'),
+    supabase.from('projets').select('*'),
     supabase.from('plan_meta').select('*').maybeSingle(),
   ]);
 
@@ -99,6 +99,7 @@ export function assemblerArbre({ orientations, axes, priorites, objectifs, resul
     orientations: orientationsEnrichies,
     axesPlats: toutesAxes,
     prioritesPlats: toutesPriorites,
+    projetsPlats: projets,
     planMeta,
   };
 }

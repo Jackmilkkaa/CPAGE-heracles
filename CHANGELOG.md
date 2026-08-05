@@ -3,6 +3,31 @@
 Toutes les évolutions notables de ce projet sont documentées ici.
 Convention : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) + [semver](https://semver.org/lang/fr/).
 
+## [0.5.0] - 2026-08-05
+
+### Ajouté
+- Vue par priorité (drilldown), la plus riche des vues : navigation entre
+  les 24 PA (flèches + liste déroulante), radar des objectifs (labels
+  complets), maxime et contexte visibles, avancement en gros chiffre.
+- Projets et actions clés en 3 colonnes (natifs de la PA / autres PA
+  transverses / hors plan), édition rapide du statut (clic pour cycler) et
+  de l'avancement (curseur), création de projet hors plan.
+- Par objectif : résultats clés éditables (ajout/suppression/curseur/
+  intitulé), projets rattachés avec sélecteur d'impact (aucun/faible/moyen/
+  fort), picker de rattachement avec recherche, override manuel, champs
+  narratifs (action menée, résultats attendus).
+- Modules `mutations.js` (écritures Supabase) et `vuePriorite.js`.
+- Après chaque écriture, rechargement complet des données puis nouveau
+  rendu de la vue courante — plus simple et plus sûr qu'une mise à jour
+  locale fine de l'arbre en mémoire, au prix d'un aller-retour réseau par
+  modification.
+
+### Non couvert dans cette passe
+- Édition complète d'un projet (dates, pôle responsable, description) :
+  prévue avec la Vue Projets à venir. Ici, seuls statut/avancement/impacts
+  sont éditables en ligne.
+- Tag boussole annuelle : pas encore repris dans cette version connectée.
+
 ## [0.4.0] - 2026-08-05
 
 ### Ajouté
