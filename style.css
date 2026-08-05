@@ -326,3 +326,45 @@ main { padding: 2rem; }
   pointer-events: none;
   box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
+
+/* Navigation entre vues */
+.view-nav {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-5);
+  border-bottom: 1px solid var(--gris-clair);
+  padding-bottom: var(--space-2);
+}
+.view-nav button {
+  background: transparent;
+  border: none;
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--fs-sm);
+  cursor: pointer;
+  color: var(--gris-fonce);
+  font-family: var(--font-body);
+  font-weight: 500;
+  border-bottom: 3px solid transparent;
+}
+.view-nav button:hover { color: var(--bleu-cpage); }
+.view-nav button.active { color: var(--bleu-cpage); border-bottom-color: var(--or-cpage); }
+
+/* Vue par orientation */
+.orient-selector { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-3); margin-bottom: var(--space-5); }
+@media (max-width: 900px) { .orient-selector { grid-template-columns: repeat(2, 1fr); } }
+.orient-tile {
+  background: white;
+  border: 1px solid var(--gris-clair);
+  border-radius: 4px;
+  padding: var(--space-4);
+  cursor: pointer;
+  text-align: left;
+  font-family: var(--font-body);
+  transition: all 0.15s;
+}
+.orient-tile:hover { border-color: var(--or-cpage); }
+.orient-tile.active { border-color: var(--bleu-cpage); border-width: 2px; padding: calc(var(--space-4) - 1px); }
+.orient-tile .code { font-family: monospace; font-size: var(--fs-xs); color: var(--or-cpage); font-weight: 700; letter-spacing: 0.1em; }
+.orient-tile .title { font-family: var(--font-display); font-size: var(--fs-md); color: var(--bleu-nuit); margin: var(--space-2) 0; font-weight: 500; }
+.orient-tile .val { font-family: monospace; font-size: var(--fs-lg); font-weight: 700; color: var(--anthracite); }
+.orient-tile .val.nc { color: var(--av-nc); font-size: var(--fs-md); font-style: italic; font-weight: 400; }

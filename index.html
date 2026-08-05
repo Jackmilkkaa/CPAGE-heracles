@@ -40,7 +40,11 @@
   </div>
 
   <div id="content-screen" class="content-screen" hidden>
-    <div id="vue-ensemble"></div>
+    <nav class="view-nav">
+      <button data-view="overview" class="active">Vue d'ensemble</button>
+      <button data-view="orientation">Par orientation</button>
+    </nav>
+    <div id="view-slot"></div>
   </div>
 </main>
 

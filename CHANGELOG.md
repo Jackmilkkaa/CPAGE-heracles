@@ -3,6 +3,17 @@
 Toutes les évolutions notables de ce projet sont documentées ici.
 Convention : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) + [semver](https://semver.org/lang/fr/).
 
+## [0.4.0] - 2026-08-05
+
+### Ajouté
+- Navigation entre vues (barre `.view-nav`) : Vue d'ensemble / Par orientation.
+- Vue par orientation : sélecteur à 4 tuiles (code, intitulé, avancement),
+  description de l'orientation sélectionnée, jauges des axes et des
+  priorités de cette orientation.
+- Les données du plan ne sont chargées qu'une fois par session (au login),
+  la navigation entre vues re-rend depuis l'arbre déjà en mémoire, sans
+  nouvelle requête Supabase.
+
 ## [0.3.1] - 2026-08-05
 
 ### Corrigé

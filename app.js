@@ -1,6 +1,6 @@
 import { getSession, signIn, signOut, getMonProfil } from './client.js';
 import { chargerPlanComplet } from './data.js';
-import { avancementPriorite, avancementAxe, avancementGlobal, fmtPct } from './calc.js';
+import { avancementPriorite, avancementAxe, avancementOrientation, avancementGlobal, fmtPct } from './calc.js';
 import { renderRadar, renderGauges } from './radar.js';
 import { escapeHtml } from './utils.js';
 
@@ -24,9 +24,6 @@ document.getElementById('toggle-password').addEventListener('click', () => {
 
 // ----------------------------------------------------------------------------
 // Version et changelog — lus en direct depuis le CHANGELOG.md sur GitHub.
-// Le repo est public : un fetch() anonyme vers raw.githubusercontent.com
-// fonctionne. Pas de copie figée codée en dur, la source de vérité reste
-// le fichier du repo.
 // ----------------------------------------------------------------------------
 const CHANGELOG_RAW_URL = 'https://raw.githubusercontent.com/Jackmilkkaa/CPAGE-heracles/main/CHANGELOG.md';
 
@@ -87,7 +84,7 @@ async function render() {
     render();
   });
 
-  await chargerVueEnsemble();
+  await chargerPlanEtAfficher();
 }
 
 loginForm.addEventListener('submit', async (e) => {
@@ -106,15 +103,27 @@ loginForm.addEventListener('submit', async (e) => {
 });
 
 // ----------------------------------------------------------------------------
-// Vue d'ensemble : bandeau vision/mission/ambition, radar + jauges, bascule
-// priorité/axe, tri par numéro ou par avancement.
+// Navigation entre vues
 // ----------------------------------------------------------------------------
+let currentView = 'overview'; // 'overview' | 'orientation'
 let planTree = null;
-let overviewMode = 'priorite'; // 'priorite' | 'axe'
-let overviewSort = 'numero';   // 'numero' | 'asc' | 'desc'
 
-async function chargerVueEnsemble() {
-  const slot = document.getElementById('vue-ensemble');
+document.querySelector('.view-nav').addEventListener('click', (e) => {
+  const btn = e.target.closest('button[data-view]');
+  if (!btn) return;
+  currentView = btn.dataset.view;
+  document.querySelectorAll('.view-nav button').forEach(b => b.classList.toggle('active', b === btn));
+  renderCurrentView();
+});
+
+function renderCurrentView() {
+  if (!planTree) return;
+  if (currentView === 'overview') renderVueEnsemble();
+  else if (currentView === 'orientation') renderVueOrientation();
+}
+
+async function chargerPlanEtAfficher() {
+  const slot = document.getElementById('view-slot');
   slot.innerHTML = '<p>Chargement des données du plan...</p>';
 
   try {
@@ -125,11 +134,18 @@ async function chargerVueEnsemble() {
     return;
   }
 
-  renderVueEnsemble();
+  renderCurrentView();
 }
 
+// ----------------------------------------------------------------------------
+// Vue d'ensemble : bandeau vision/mission/ambition, radar + jauges, bascule
+// priorité/axe, tri par numéro ou par avancement.
+// ----------------------------------------------------------------------------
+let overviewMode = 'priorite'; // 'priorite' | 'axe'
+let overviewSort = 'numero';   // 'numero' | 'asc' | 'desc'
+
 function renderVueEnsemble() {
-  const slot = document.getElementById('vue-ensemble');
+  const slot = document.getElementById('view-slot');
   const m = planTree.planMeta || {};
 
   slot.innerHTML = `
@@ -204,6 +220,74 @@ function dessinerRadarEtJauges() {
   if (overviewSort === 'asc') sorted.sort((a, b) => (a.value === null ? 999 : a.value) - (b.value === null ? 999 : b.value));
   else if (overviewSort === 'desc') sorted.sort((a, b) => (b.value === null ? -1 : b.value) - (a.value === null ? -1 : a.value));
   renderGauges('gauge-slot', sorted);
+}
+
+// ----------------------------------------------------------------------------
+// Vue par orientation : sélecteur à 4 tuiles, description, jauges des axes
+// et des priorités de l'orientation sélectionnée.
+// ----------------------------------------------------------------------------
+let currentOrientationId = null;
+
+function renderVueOrientation() {
+  const slot = document.getElementById('view-slot');
+
+  if (!currentOrientationId || !planTree.orientations.some(o => o.id === currentOrientationId)) {
+    currentOrientationId = planTree.orientations[0] ? planTree.orientations[0].id : null;
+  }
+  const orient = planTree.orientations.find(o => o.id === currentOrientationId);
+  if (!orient) { slot.innerHTML = '<p>Aucune orientation disponible.</p>'; return; }
+
+  const tiles = planTree.orientations.map(o => {
+    const av = avancementOrientation(o);
+    return `
+      <button class="orient-tile ${o.id === currentOrientationId ? 'active' : ''}" data-orient="${o.id}">
+        <div class="code">${escapeHtml(o.id)}</div>
+        <div class="title">${escapeHtml(o.intitule)}</div>
+        <div class="val ${av.value === null ? 'nc' : ''}">${fmtPct(av.value)}</div>
+      </button>
+    `;
+  }).join('');
+
+  const axeItems = orient.axes.map(ax => {
+    const av = avancementAxe(ax);
+    return { label: ax.id, code: ax.id, title: ax.intitule, value: av.value, override: av.override };
+  });
+
+  const paItems = [];
+  for (const ax of orient.axes) {
+    for (const pa of ax.priorites) {
+      const av = avancementPriorite(pa);
+      paItems.push({ label: '#' + pa.numero, code: pa.id, title: pa.intitule, value: av.value, override: av.override });
+    }
+  }
+  paItems.sort((a, b) => parseInt(a.label.slice(1)) - parseInt(b.label.slice(1)));
+
+  slot.innerHTML = `
+    <div class="orient-selector">${tiles}</div>
+
+    <div class="vision-block">
+      <h3>${escapeHtml(orient.id)} · ${escapeHtml(orient.intitule)}</h3>
+      <p style="margin-bottom:0">${escapeHtml(orient.description || '')}</p>
+    </div>
+
+    <div class="overview-grid">
+      <div class="card">
+        <div class="card-title">Axes de l'orientation</div>
+        <div class="gauge-list" id="axe-slot"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Priorités de l'orientation</div>
+        <div class="gauge-list" id="prio-slot"></div>
+      </div>
+    </div>
+  `;
+
+  slot.querySelectorAll('.orient-tile').forEach(btn => {
+    btn.addEventListener('click', () => { currentOrientationId = btn.dataset.orient; renderVueOrientation(); });
+  });
+
+  renderGauges('axe-slot', axeItems);
+  renderGauges('prio-slot', paItems);
 }
 
 // ----------------------------------------------------------------------------
