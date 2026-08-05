@@ -3,6 +3,23 @@
 Toutes les évolutions notables de ce projet sont documentées ici.
 Convention : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) + [semver](https://semver.org/lang/fr/).
 
+## [0.3.1] - 2026-08-05
+
+### Corrigé
+- `plan_meta` restait vide : la migration 0001 créait la table sans y
+  insérer de ligne, et le seed faisait un `UPDATE` qui, sur une table vide,
+  ne touche silencieusement aucune ligne (0 erreur, 0 ligne modifiée).
+  Résultat : `.single()` côté client échouait avec une erreur 406
+  ("Cannot coerce the result to a single JSON object"), qui a bloqué le
+  chargement de toute la Vue d'ensemble. Migration `0003_fix_plan_meta.sql`
+  ajoutée (insert idempotent), et le seed passe désormais par un
+  `insert ... on conflict do update` au lieu d'un simple `update`, pour ne
+  plus jamais dépendre d'une ligne préexistante.
+- `data.js` utilise `.maybeSingle()` plutôt que `.single()` sur `plan_meta` :
+  si cette ligne venait à manquer à nouveau, le bandeau vision/mission/
+  ambition serait simplement absent, plutôt que de faire échouer toute la
+  vue.
+
 ## [0.3.0] - 2026-08-05
 
 ### Ajouté

@@ -28,7 +28,7 @@ export async function chargerPlanComplet() {
     supabase.from('resultats_cles').select('*'),
     supabase.from('impacts').select('*'),
     supabase.from('projets').select('id, statut, avancement_pct'),
-    supabase.from('plan_meta').select('*').single(),
+    supabase.from('plan_meta').select('*').maybeSingle(),
   ]);
 
   const firstError = e1 || e2 || e3 || e4 || e5 || e6 || e7 || e8;

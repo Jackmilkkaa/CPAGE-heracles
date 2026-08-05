@@ -6,15 +6,27 @@
 
 set search_path = heracles, public;
 
-update plan_meta set
-  plan = 'Héraclès',
-  periode = '2025-2030',
-  organisation = 'CPAGE',
-  vision = 'La pérennité de notre système de santé passe par le développement d''un numérique maîtrisé au service de la performance individuelle et collective.',
-  mission = 'Être le partenaire stratégique catalyseur d''efficience pour les établissements publics de santé.',
-  ambition = 'Devenir LA référence des fonctions soutien reconnue et choisie par nos collaborateurs, adhérents et partenaires.',
-  mode_calcul = 'moyenne_ponderee_kr'
-where id = 1;
+-- upsert plutôt qu'update simple : ne dépend plus de l'existence préalable
+-- de la ligne (c'est justement l'absence de cette ligne qui a causé le bug
+-- corrigé en migration 0003).
+insert into plan_meta (id, plan, periode, organisation, vision, mission, ambition, mode_calcul) values (
+  1,
+  'Héraclès',
+  '2025-2030',
+  'CPAGE',
+  'La pérennité de notre système de santé passe par le développement d''un numérique maîtrisé au service de la performance individuelle et collective.',
+  'Être le partenaire stratégique catalyseur d''efficience pour les établissements publics de santé.',
+  'Devenir LA référence des fonctions soutien reconnue et choisie par nos collaborateurs, adhérents et partenaires.',
+  'moyenne_ponderee_kr'
+)
+on conflict (id) do update set
+  plan = excluded.plan,
+  periode = excluded.periode,
+  organisation = excluded.organisation,
+  vision = excluded.vision,
+  mission = excluded.mission,
+  ambition = excluded.ambition,
+  mode_calcul = excluded.mode_calcul;
 
 -- Orientations
 insert into orientations (id, code, intitule, description, poids) values
