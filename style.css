@@ -3,14 +3,43 @@
   --bleu-profond: #16305A;
   --bleu-cpage: #1E4076;
   --anthracite: #1E293B;
+  --gris-fonce: #334155;
+  --gris-moyen: #64748B;
   --gris-clair: #CBD5E1;
   --gris-tres-clair: #F1F5F9;
   --fond-page: #F8FAFC;
+  --blanc-doux: #FDFDFB;
   --or-cpage: #C9A55C;
   --or-clair: #E8D097;
   --bordeaux: #7C1D1F;
+  --bordeaux-clair: #A03A3C;
+
+  --av-rouge: #B54848;
+  --av-orange: #D97706;
+  --av-jaunevert: #A3A34B;
+  --av-vert: #4A7C59;
+  --av-nc: #94A3B8;
+  --av-override: #7C3AED;
+
   --font-display: Georgia, "Times New Roman", serif;
-  --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, sans-serif;
+
+  --fs-xs: 0.75rem;
+  --fs-sm: 0.875rem;
+  --fs-base: 0.9375rem;
+  --fs-md: 1rem;
+  --fs-lg: 1.25rem;
+  --fs-xl: 1.625rem;
+  --fs-2xl: 2.25rem;
+  --fs-3xl: 3rem;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-8: 3rem;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -47,9 +76,9 @@ body {
   color: white; padding: 0.3rem 0.8rem; border-radius: 3px; cursor: pointer;
 }
 
-main { padding: 2rem; max-width: 600px; margin: 0 auto; }
+main { padding: 2rem; }
 
-.login-screen { display: flex; justify-content: center; margin-top: 4rem; }
+.login-screen { display: flex; justify-content: center; margin-top: 4rem; max-width: 420px; margin-left: auto; margin-right: auto; }
 .login-form {
   background: white; border: 1px solid var(--gris-clair); border-radius: 4px;
   padding: 2rem; display: flex; flex-direction: column; gap: 1rem; width: 100%;
@@ -67,7 +96,7 @@ main { padding: 2rem; max-width: 600px; margin: 0 auto; }
 .btn-primary { background: var(--or-cpage); color: var(--bleu-nuit); }
 .login-error { color: var(--bordeaux); font-size: 0.85rem; }
 
-.content-screen { background: white; border: 1px solid var(--gris-clair); border-radius: 4px; padding: 1.5rem; }
+.content-screen { max-width: 1300px; margin: 0 auto; }
 
 /* Bascule affichage/masquage du mot de passe */
 .password-wrap { position: relative; }
@@ -125,4 +154,175 @@ main { padding: 2rem; max-width: 600px; margin: 0 auto; }
   font-size: 0.78rem;
   margin: 0.5rem 0;
   color: var(--anthracite);
+}
+
+/* ============================================================================
+   Vue d'ensemble — cartes, radar SVG, jauges, tri, vision/mission/ambition
+   Porté depuis le prototype local (heracles_pilotage.html), déjà testé.
+   ============================================================================ */
+
+.overview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: var(--space-5);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--gris-clair);
+}
+.overview-header h2 {
+  font-family: var(--font-display);
+  font-size: var(--fs-xl);
+  font-weight: 400;
+  color: var(--bleu-nuit);
+}
+.overview-header .subtitle { font-size: var(--fs-sm); color: var(--gris-moyen); }
+
+.segment-control {
+  display: inline-flex;
+  border: 1px solid var(--gris-clair);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.segment-control button {
+  background: white;
+  border: none;
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--fs-sm);
+  cursor: pointer;
+  color: var(--gris-fonce);
+  font-family: var(--font-body);
+}
+.segment-control button.active { background: var(--bleu-cpage); color: white; }
+.segment-control button:hover:not(.active) { background: var(--gris-tres-clair); }
+
+.card {
+  background: white;
+  border-radius: 4px;
+  padding: var(--space-5);
+  border: 1px solid var(--gris-clair);
+}
+.card .card-title {
+  font-family: var(--font-display);
+  font-size: var(--fs-lg);
+  color: var(--bleu-nuit);
+  margin-bottom: var(--space-4);
+  padding-left: var(--space-3);
+  border-left: 3px solid var(--or-cpage);
+}
+
+.overview-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-6);
+  margin-bottom: var(--space-6);
+}
+@media (max-width: 900px) { .overview-grid { grid-template-columns: 1fr; } }
+
+.vision-block {
+  background: linear-gradient(135deg, var(--bleu-nuit), var(--bleu-profond));
+  color: var(--blanc-doux);
+  padding: var(--space-6);
+  border-radius: 4px;
+  margin-bottom: var(--space-6);
+}
+.vision-block h3 {
+  font-family: var(--font-display);
+  font-size: var(--fs-md);
+  color: var(--or-clair);
+  margin-bottom: var(--space-2);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-weight: 400;
+}
+.vision-block p { font-family: var(--font-display); font-size: var(--fs-base); line-height: 1.4; }
+.vision-block .vision-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--space-5); }
+@media (max-width: 900px) { .vision-block .vision-grid { grid-template-columns: 1fr; } }
+
+/* Tri par pictos */
+.gauge-sort-header { display: flex; gap: var(--space-2); margin-bottom: var(--space-2); padding-left: var(--space-1); }
+.sort-icon-btn {
+  background: var(--gris-tres-clair);
+  border: 1px solid var(--gris-clair);
+  border-radius: 3px;
+  padding: 2px 10px;
+  font-size: var(--fs-xs);
+  cursor: pointer;
+  color: var(--gris-moyen);
+  font-family: monospace;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+.sort-icon-btn:hover { border-color: var(--bleu-cpage); color: var(--bleu-cpage); }
+.sort-icon-btn.active { background: var(--bleu-cpage); border-color: var(--bleu-cpage); color: white; }
+.sort-icon-arrow { font-size: 0.85em; }
+
+/* Jauges / barres */
+.gauge-list { display: flex; flex-direction: column; gap: var(--space-3); }
+.gauge-row {
+  display: grid;
+  grid-template-columns: 3em 1fr auto;
+  gap: var(--space-3);
+  align-items: center;
+  font-size: var(--fs-sm);
+}
+.gauge-row .g-code { color: var(--gris-moyen); font-family: monospace; font-size: var(--fs-xs); }
+.gauge-row .g-label {
+  color: var(--gris-fonce);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.gauge-bar { height: 14px; background: var(--gris-tres-clair); border-radius: 2px; overflow: hidden; }
+.gauge-fill { height: 100%; border-radius: 2px; transition: width 0.35s ease; }
+.gauge-fill.av-rouge { background: var(--av-rouge); }
+.gauge-fill.av-orange { background: var(--av-orange); }
+.gauge-fill.av-jaunevert { background: var(--av-jaunevert); }
+.gauge-fill.av-vert { background: var(--av-vert); }
+.gauge-fill.av-nc { background: repeating-linear-gradient(45deg, var(--av-nc), var(--av-nc) 4px, #b8c3d1 4px, #b8c3d1 8px); }
+.gauge-fill.av-override { background: var(--av-override); }
+.gauge-row .g-value { font-family: monospace; font-weight: 600; min-width: 3.5em; text-align: right; color: var(--anthracite); }
+.gauge-row .g-value.nc { color: var(--av-nc); font-weight: 400; font-style: italic; }
+.gauge-row.clickable { cursor: pointer; padding: var(--space-1) var(--space-2); border-radius: 3px; }
+.gauge-row.clickable:hover { background: var(--gris-tres-clair); }
+.override-badge {
+  display: inline-block;
+  background: var(--av-override);
+  color: white;
+  font-size: 0.65rem;
+  padding: 1px 6px;
+  border-radius: 2px;
+  margin-left: var(--space-2);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: help;
+}
+
+/* Radar SVG */
+.radar-container { display: flex; justify-content: center; align-items: center; padding: var(--space-3) 0; overflow: visible; }
+.radar-container svg { width: 100%; height: 100%; aspect-ratio: 1 / 1; max-width: 1100px; max-height: 1100px; display: block; overflow: visible; }
+.radar-grid { fill: none; stroke: var(--gris-clair); stroke-width: 0.5; }
+.radar-axis { stroke: var(--gris-clair); stroke-width: 0.5; }
+.radar-data { fill: var(--bleu-cpage); fill-opacity: 0.25; stroke: var(--bleu-cpage); stroke-width: 1.5; }
+.radar-point { fill: var(--or-cpage); stroke: var(--bleu-nuit); stroke-width: 1; }
+.radar-label { font-family: var(--font-body); font-size: 10px; fill: var(--gris-fonce); }
+.radar-label-major { font-family: var(--font-body); font-size: 12px; fill: var(--bleu-nuit); font-weight: 600; }
+.radar-tick-label { font-family: monospace; font-size: 9px; fill: var(--gris-moyen); }
+.radar-label-full { font-family: var(--font-body); font-size: 13px; fill: var(--gris-fonce); }
+.radar-label-full .radar-label-prefix { font-weight: 700; font-family: var(--font-display); font-size: 16px; fill: var(--or-cpage); }
+.radar-label-full .radar-label-value { font-family: monospace; font-weight: 700; fill: var(--bleu-nuit); font-size: 14px; }
+
+.tooltip {
+  position: absolute;
+  background: var(--bleu-nuit);
+  color: white;
+  padding: var(--space-2) var(--space-3);
+  border-radius: 3px;
+  font-size: var(--fs-xs);
+  max-width: 320px;
+  z-index: 200;
+  pointer-events: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }

@@ -3,6 +3,25 @@
 Toutes les évolutions notables de ce projet sont documentées ici.
 Convention : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) + [semver](https://semver.org/lang/fr/).
 
+## [0.3.0] - 2026-08-05
+
+### Ajouté
+- Vue d'ensemble complète, branchée sur Supabase : bandeau vision/mission/
+  ambition, radar SVG avec bascule par priorité (24 branches) / par axe (8
+  branches), jauges en barres avec tri par numéro ou par avancement.
+- Modules `calc.js` (calcul d'avancement, dénominateur fixe, override
+  manuel), `radar.js` (rendu SVG radar + jauges), `data.js` (chargement
+  Supabase en requêtes plates + assemblage en arbre), `utils.js`.
+- Logique de calcul et d'assemblage testée unitairement avec des données
+  factices avant intégration (voir historique de dev) : contributions KR +
+  projets actifs, dénominateur fixe à chaque niveau d'agrégation, override
+  manuel prioritaire.
+
+### Modifié
+- `main` ne fixe plus de largeur globale ; `.login-screen` reste étroit,
+  `.content-screen` s'élargit jusqu'à 1300px pour accueillir le radar et les
+  jauges côte à côte.
+
 ## [0.2.2] - 2026-08-05
 
 ### Corrigé
