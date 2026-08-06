@@ -3,6 +3,27 @@
 Toutes les évolutions notables de ce projet sont documentées ici.
 Convention : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) + [semver](https://semver.org/lang/fr/).
 
+## [0.9.0] - 2026-08-05
+
+### Ajouté
+- Navigation cliquable entre les vues : depuis la Vue d'ensemble (radar et
+  jauges, mode priorité) et depuis la Vue par orientation, cliquer sur une
+  priorité bascule directement sur son détail (Vue par priorité). Cliquer
+  sur un axe en Vue d'ensemble bascule sur son orientation.
+- `vuePriorite.js` navigue désormais par identifiant de priorité plutôt que
+  par index de tableau, ce qui permet ce deep-link propre depuis n'importe
+  quelle autre vue (`irVersPriorite(id)` exporté).
+- Modal complet d'édition d'un projet accessible depuis la Vue par priorité
+  (bouton "Détails" sur chaque carte projet des 3 colonnes, et sur chaque
+  projet rattaché à un objectif), pas seulement depuis la Vue Projets.
+- Indicateur d'avancement global repositionné et agrandi, centré dans
+  l'en-tête (comme le prototype local v1), au lieu d'être absent.
+
+### Modifié
+- Le modal projet (métadonnées, boussole, impacts) est extrait dans un
+  module partagé `projetModal.js`, utilisé à la fois par `vueProjets.js` et
+  `vuePriorite.js` — plus de duplication, un seul endroit à faire évoluer.
+
 ## [0.8.1] - 2026-08-05
 
 ### Modifié

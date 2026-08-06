@@ -13,10 +13,17 @@ import { avancementObjectif, avancementPriorite, isProjetActif, fmtPct } from '.
 import { renderRadar, renderGauges } from './radar.js';
 import { escapeHtml } from './utils.js';
 import * as M from './mutations.js';
+import { ouvrirModalProjet } from './projetModal.js';
 
 let planTree = null;
 let onDataChanged = null;
-let currentIndex = 0;
+let currentPrioriteId = null;
+
+// Permet à d'autres vues (Vue d'ensemble, Par orientation) de naviguer
+// directement vers une priorité précise avant de basculer sur cette vue.
+export function irVersPriorite(prioriteId) {
+  currentPrioriteId = prioriteId;
+}
 
 function notify(msg, kind = 'info') {
   const n = document.createElement('div');
@@ -42,7 +49,10 @@ export function renderVuePriorite(tree, onChanged) {
   onDataChanged = onChanged;
 
   const slot = document.getElementById('view-slot');
+  let currentIndex = planTree.prioritesPlats.findIndex(p => p.id === currentPrioriteId);
+  if (currentIndex < 0) currentIndex = 0;
   const pa = planTree.prioritesPlats[currentIndex];
+  currentPrioriteId = pa ? pa.id : null;
   if (!pa) { slot.innerHTML = '<p>Aucune priorité.</p>'; return; }
 
   const axe = planTree.axesPlats.find(a => a.id === pa.axe_id);
@@ -105,9 +115,9 @@ export function renderVuePriorite(tree, onChanged) {
     <div class="objectifs-list" id="objectifs-slot"></div>
   `;
 
-  document.getElementById('pa-prev').addEventListener('click', () => { currentIndex--; renderVuePriorite(planTree, onDataChanged); });
-  document.getElementById('pa-next').addEventListener('click', () => { currentIndex++; renderVuePriorite(planTree, onDataChanged); });
-  document.getElementById('pa-select').addEventListener('change', (e) => { currentIndex = parseInt(e.target.value); renderVuePriorite(planTree, onDataChanged); });
+  document.getElementById('pa-prev').addEventListener('click', () => { currentPrioriteId = planTree.prioritesPlats[currentIndex - 1].id; renderVuePriorite(planTree, onDataChanged); });
+  document.getElementById('pa-next').addEventListener('click', () => { currentPrioriteId = planTree.prioritesPlats[currentIndex + 1].id; renderVuePriorite(planTree, onDataChanged); });
+  document.getElementById('pa-select').addEventListener('change', (e) => { currentPrioriteId = planTree.prioritesPlats[parseInt(e.target.value)].id; renderVuePriorite(planTree, onDataChanged); });
 
   const ficheBtn = document.getElementById('btn-fiche-complete');
   if (ficheBtn) {
@@ -179,7 +189,7 @@ function renderProjetCardInline(prj) {
   const paOrig = prj.pa_origine ? planTree.prioritesPlats.find(p => p.id === prj.pa_origine) : null;
   return `
     <div class="projet-card-inline" data-projet-id="${prj.id}">
-      <div class="pci-title">${escapeHtml(prj.intitule || '(sans titre)')}
+      <div class="pci-title" data-open-modal="${prj.id}" style="cursor:pointer" title="Cliquer pour ouvrir le détail complet">${escapeHtml(prj.intitule || '(sans titre)')}
         ${paOrig ? `<span class="projet-transverse-tag">natif #${paOrig.numero}</span>` : ''}
         ${prj.origine === 'hors_plan' ? '<span class="projet-transverse-tag">hors plan</span>' : ''}
       </div>
@@ -189,6 +199,7 @@ function renderProjetCardInline(prj) {
           <input type="range" min="0" max="100" step="1" value="${av}" data-slider-avancement="${prj.id}">
           <span class="pci-value" data-slider-value="${prj.id}">${av}%</span>
         </div>
+        <button class="btn btn-mini btn-light" data-open-modal="${prj.id}">Détails</button>
       </div>
     </div>
   `;
@@ -199,8 +210,15 @@ function labelStatut(code) {
 }
 
 function wireProjetCardsInline(root) {
+  root.querySelectorAll('[data-open-modal]').forEach(el => {
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      ouvrirModalProjet(el.dataset.openModal, planTree, onDataChanged);
+    });
+  });
   root.querySelectorAll('[data-cycle-statut]').forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
       const id = btn.dataset.cycleStatut;
       const prj = planTree.projetsPlats.find(p => p.id === id);
       const order = ['non_demarre', 'en_cours', 'realise', 'clos_partiel', 'abandonne'];
@@ -209,6 +227,7 @@ function wireProjetCardsInline(root) {
     });
   });
   root.querySelectorAll('[data-slider-avancement]').forEach(input => {
+    input.addEventListener('click', (e) => e.stopPropagation());
     input.addEventListener('change', () => {
       const id = input.dataset.sliderAvancement;
       muter(() => M.updateProjet(id, { avancement_pct: parseInt(input.value) }));
@@ -312,6 +331,7 @@ function renderContribs(pa, obj, linked) {
         <div class="impact-selector">
           ${[0, 1, 2, 3].map(p => `<button data-poids="${p}" class="${p === im.poids ? 'selected' : ''}" data-set-impact="${prj.id}|${obj.id}|${p}">${['—', 'F', 'M', '++'][p]}</button>`).join('')}
         </div>
+        <button class="cp-details" data-open-modal="${prj.id}">Détails</button>
       </div>
     `;
   }).join('');
@@ -336,6 +356,13 @@ function renderOverridePanel(entity, av) {
 function wireObjectifCard(pa, obj) {
   const card = document.querySelector(`[data-objectif-id="${obj.id}"]`);
   if (!card) return;
+
+  card.querySelectorAll('[data-open-modal]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      ouvrirModalProjet(btn.dataset.openModal, planTree, onDataChanged);
+    });
+  });
 
   card.querySelectorAll('[data-kr-slider]').forEach(input => {
     input.addEventListener('input', () => {

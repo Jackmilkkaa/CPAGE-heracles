@@ -3,7 +3,7 @@ import { chargerPlanComplet } from './data.js';
 import { avancementPriorite, avancementAxe, avancementOrientation, avancementGlobal, fmtPct } from './calc.js';
 import { renderRadar, renderGauges } from './radar.js';
 import { escapeHtml } from './utils.js';
-import { renderVuePriorite } from './vuePriorite.js';
+import { renderVuePriorite, irVersPriorite } from './vuePriorite.js';
 import { renderVueProjets } from './vueProjets.js';
 import { renderVueSynthese } from './vueSynthese.js';
 
@@ -119,8 +119,29 @@ document.querySelector('.view-nav').addEventListener('click', (e) => {
   renderCurrentView();
 });
 
+// Utilisée depuis n'importe quelle vue pour sauter directement au détail
+// d'une priorité (radar cliquable, jauges cliquables, etc.)
+function naviguerVersPriorite(prioriteId) {
+  irVersPriorite(prioriteId);
+  currentView = 'priorite';
+  document.querySelectorAll('.view-nav button').forEach(b => b.classList.toggle('active', b.dataset.view === 'priorite'));
+  renderCurrentView();
+}
+
+function naviguerVersOrientation(orientationId) {
+  currentOrientationId = orientationId;
+  currentView = 'orientation';
+  document.querySelectorAll('.view-nav button').forEach(b => b.classList.toggle('active', b.dataset.view === 'orientation'));
+  renderCurrentView();
+}
+
 function renderCurrentView() {
   if (!planTree) return;
+  const gv = document.getElementById('global-value');
+  const g = avancementGlobal(planTree.orientations);
+  gv.textContent = fmtPct(g);
+  gv.classList.toggle('nc', g === null);
+
   if (currentView === 'overview') renderVueEnsemble();
   else if (currentView === 'orientation') renderVueOrientation();
   else if (currentView === 'priorite') renderVuePriorite(planTree, rafraichirDonnees);
@@ -221,12 +242,17 @@ function dessinerRadarEtJauges() {
   if (overviewMode === 'priorite') {
     items = planTree.prioritesPlats.map(pa => {
       const av = avancementPriorite(pa);
-      return { label: '#' + pa.numero, code: pa.id, title: pa.intitule, value: av.value, override: av.override };
+      return { label: '#' + pa.numero, code: pa.id, title: pa.intitule, value: av.value, override: av.override, onClick: () => naviguerVersPriorite(pa.id) };
     });
   } else {
     items = planTree.axesPlats.map(ax => {
       const av = avancementAxe(ax);
-      return { label: ax.id.replace('-', ' '), code: ax.id, title: (ax._orientation ? ax._orientation.intitule + ' · ' : '') + ax.intitule, value: av.value, override: av.override };
+      return {
+        label: ax.id.replace('-', ' '), code: ax.id,
+        title: (ax._orientation ? ax._orientation.intitule + ' · ' : '') + ax.intitule,
+        value: av.value, override: av.override,
+        onClick: ax._orientation ? () => naviguerVersOrientation(ax._orientation.id) : null,
+      };
     });
     // Chaque orientation possède 2 axes consécutifs : avec 8 axes répartis
     // régulièrement, le premier axe de chaque orientation tombe exactement
@@ -279,7 +305,7 @@ function renderVueOrientation() {
   for (const ax of orient.axes) {
     for (const pa of ax.priorites) {
       const av = avancementPriorite(pa);
-      paItems.push({ label: '#' + pa.numero, code: pa.id, title: pa.intitule, value: av.value, override: av.override });
+      paItems.push({ label: '#' + pa.numero, code: pa.id, title: pa.intitule, value: av.value, override: av.override, onClick: () => naviguerVersPriorite(pa.id) });
     }
   }
   paItems.sort((a, b) => parseInt(a.label.slice(1)) - parseInt(b.label.slice(1)));

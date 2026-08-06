@@ -61,11 +61,33 @@ body {
   background: linear-gradient(180deg, var(--bleu-nuit), var(--bleu-profond));
   color: white;
   padding: 1rem 1.5rem;
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 1.5rem;
   align-items: center;
   border-bottom: 3px solid var(--or-cpage);
 }
+.global-indicator {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  justify-content: center;
+}
+.global-indicator .label {
+  font-size: var(--fs-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--gris-clair);
+}
+.global-indicator .value {
+  font-family: var(--font-display);
+  font-size: var(--fs-2xl);
+  font-weight: 400;
+  color: white;
+  min-width: 4ch;
+  text-align: right;
+}
+.global-indicator .value.nc { color: var(--av-nc); font-size: var(--fs-lg); }
 .app-title { display: flex; align-items: baseline; gap: 0.75rem; }
 .app-title .h1 { font-family: var(--font-display); font-size: 1.5rem; }
 .app-title .subtitle { font-size: 0.8rem; color: var(--or-clair); }
