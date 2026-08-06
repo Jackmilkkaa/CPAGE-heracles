@@ -3,6 +3,15 @@
 Toutes les évolutions notables de ce projet sont documentées ici.
 Convention : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) + [semver](https://semver.org/lang/fr/).
 
+## [0.8.0] - 2026-08-05
+
+### Ajouté
+- Vue d'ensemble : troisième niveau de bascule "Par orientation (4)", le
+  plus synthétique, en plus de "Par axe (8)" et "Par priorité (24)".
+  Devient le mode par défaut à l'ouverture de la vue. Libellés en intitulé
+  complet (comme le radar objectifs), lisible d'un coup d'œil pour repérer
+  sur quelle orientation le plan progresse le plus.
+
 ## [0.7.2] - 2026-08-05
 
 ### Modifié
