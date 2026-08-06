@@ -983,3 +983,229 @@ main { padding: 2rem; }
   from { transform: translateY(20px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
 }
+
+/* ============================================================================
+   Vue Projets — grille, filtres, modal, boussole. Porté du prototype local.
+   ============================================================================ */
+.projets-toolbar {
+  display: flex;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+  align-items: center;
+  flex-wrap: wrap;
+}
+.projets-toolbar input[type="search"] {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--gris-clair);
+  border-radius: 3px;
+  font-family: var(--font-body);
+  font-size: var(--fs-sm);
+  min-width: 240px;
+}
+.projets-toolbar select {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--gris-clair);
+  border-radius: 3px;
+  font-family: var(--font-body);
+  font-size: var(--fs-sm);
+  background: white;
+}
+.projets-count {
+  font-size: var(--fs-sm);
+  color: var(--gris-moyen);
+  margin-left: auto;
+}
+.projets-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: var(--space-3);
+}
+.projet-tile {
+  background: white;
+  border: 1px solid var(--gris-clair);
+  border-radius: 4px;
+  padding: var(--space-3) var(--space-4);
+  cursor: pointer;
+  transition: all 0.15s;
+  border-left: 3px solid var(--or-cpage);
+}
+.projet-tile:hover { border-color: var(--bleu-cpage); border-left-color: var(--bleu-cpage); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+.projet-tile.hors-plan { border-left-color: var(--bordeaux); }
+.projet-tile .prj-id {
+  font-family: monospace;
+  font-size: var(--fs-xs);
+  color: var(--gris-moyen);
+  font-weight: 600;
+}
+.projet-tile .prj-title {
+  font-weight: 600;
+  color: var(--bleu-nuit);
+  font-size: var(--fs-sm);
+  margin: var(--space-1) 0;
+  line-height: 1.35;
+}
+.projet-tile .prj-meta {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  margin: var(--space-2) 0;
+  font-size: var(--fs-xs);
+}
+.projet-tile .prj-badge {
+  padding: 1px 6px;
+  border-radius: 2px;
+  background: var(--gris-tres-clair);
+  color: var(--gris-fonce);
+}
+.projet-tile .prj-badge.pole { background: var(--bleu-cpage); color: white; }
+.projet-tile .prj-badge.pa { background: var(--or-cpage); color: var(--bleu-nuit); }
+.projet-tile .prj-badge.hors { background: var(--bordeaux); color: white; }
+.projet-tile .prj-statut { display: flex; align-items: center; gap: var(--space-2); margin: var(--space-2) 0 var(--space-1); }
+.projet-tile .prj-bar {
+  height: 6px;
+  background: var(--gris-tres-clair);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: var(--space-2);
+}
+.projet-tile .prj-bar-fill { height: 100%; border-radius: 3px; }
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+.form-field { display: flex; flex-direction: column; gap: var(--space-1); }
+.form-field label {
+  font-size: var(--fs-xs);
+  color: var(--gris-fonce);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+}
+.form-field input, .form-field select, .form-field textarea {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--gris-clair);
+  border-radius: 3px;
+  font-family: var(--font-body);
+  font-size: var(--fs-sm);
+}
+.form-field.wide { grid-column: span 2; }
+.form-field .field-slider { display: flex; align-items: center; gap: var(--space-3); }
+.form-field .field-slider input[type="range"] { flex: 1; accent-color: var(--bleu-cpage); }
+.form-field .field-slider .val { font-family: monospace; font-weight: 700; min-width: 3.5em; text-align: right; }
+.impacts-section h4 {
+  font-family: var(--font-display);
+  color: var(--bleu-nuit);
+  font-weight: 500;
+  margin-bottom: var(--space-2);
+  padding-left: var(--space-3);
+  border-left: 3px solid var(--or-cpage);
+}
+.impacts-help {
+  font-size: var(--fs-xs);
+  color: var(--gris-moyen);
+  margin-bottom: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  background: var(--gris-tres-clair);
+  border-radius: 3px;
+}
+.impact-pa-block {
+  border: 1px solid var(--gris-clair);
+  border-radius: 3px;
+  margin-bottom: var(--space-2);
+  overflow: hidden;
+}
+.impact-pa-header {
+  padding: var(--space-2) var(--space-3);
+  background: var(--gris-tres-clair);
+  cursor: pointer;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: var(--space-2);
+  align-items: center;
+  font-size: var(--fs-sm);
+  user-select: none;
+}
+.impact-pa-header:hover { background: #E7EDF5; }
+.impact-pa-header .caret { transition: transform 0.15s; }
+.impact-pa-header.open .caret { transform: rotate(90deg); }
+.impact-pa-header .pa-code {
+  font-family: monospace;
+  font-weight: 700;
+  color: var(--or-cpage);
+}
+.impact-pa-header .pa-summary {
+  font-size: var(--fs-xs);
+  color: var(--gris-moyen);
+  font-weight: 600;
+}
+.impact-pa-body { display: none; padding: var(--space-3); }
+.impact-pa-body.open { display: block; }
+.impact-obj-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--space-3);
+  align-items: center;
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--gris-tres-clair);
+}
+.impact-obj-row:last-child { border-bottom: none; }
+.impact-obj-row .obj-label {
+  font-size: var(--fs-sm);
+  color: var(--gris-fonce);
+}
+.impact-obj-row .obj-label .obj-code {
+  color: var(--or-cpage);
+  font-weight: 700;
+  font-family: monospace;
+  margin-right: var(--space-2);
+}
+.projet-add-btn { margin-left: auto; }
+.boussole-section {
+  margin-bottom: var(--space-5);
+  padding-bottom: var(--space-5);
+  border-bottom: 1px solid var(--gris-tres-clair);
+}
+.boussole-section h4 {
+  font-family: var(--font-display);
+  color: var(--bleu-nuit);
+  font-weight: 500;
+  margin-bottom: var(--space-2);
+  padding-left: var(--space-3);
+  border-left: 3px solid var(--or-cpage);
+}
+.boussole-years {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+.boussole-year-btn {
+  background: white;
+  border: 1px solid var(--gris-clair);
+  border-radius: 16px;
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--fs-sm);
+  cursor: pointer;
+  color: var(--gris-fonce);
+  font-family: var(--font-body);
+  font-weight: 600;
+  transition: all 0.15s;
+}
+.boussole-year-btn:hover { border-color: var(--or-cpage); }
+.boussole-year-btn.selected {
+  background: var(--or-cpage);
+  border-color: var(--or-cpage);
+  color: var(--bleu-nuit);
+}
+.boussole-badge {
+  display: inline-block;
+  background: var(--or-cpage);
+  color: var(--bleu-nuit);
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: 10px;
+  margin-left: var(--space-2);
+  white-space: nowrap;
+}

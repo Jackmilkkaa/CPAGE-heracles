@@ -3,6 +3,27 @@
 Toutes les évolutions notables de ce projet sont documentées ici.
 Convention : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) + [semver](https://semver.org/lang/fr/).
 
+## [0.6.0] - 2026-08-05
+
+### Ajouté
+- Vue Projets : grille de tous les projets (natifs + hors plan), filtres
+  (recherche, pôle, statut, origine, PA, boussole), compteur de résultats.
+- Modal complet d'édition par projet : intitulé, description, pôle
+  responsable, 3 dates, avancement, commentaire, boussole annuelle
+  (tags cliquables par année), impacts sur les 24 PA en accordéon (chaque
+  PA développe ses objectifs avec sélecteur Aucun/Faible/Moyen/Fort).
+- Suppression d'un projet hors plan directement depuis le modal.
+- Module `vueProjets.js`.
+
+### Sécurité
+- Migration `0004_protect_projet_deletion.sql` : un projet natif du plan ne
+  peut plus être supprimé par un éditeur (seulement modifié dans ses limites
+  déjà protégées). Lacune identifiée en préparant cette vue — la policy RLS
+  d'écriture couvrait déjà DELETE sans distinction d'origine, ce que le
+  trigger de protection des colonnes ne couvrait pas puisqu'il ne s'applique
+  qu'aux UPDATE. Testé : éditeur bloqué sur un projet natif, autorisé sur un
+  projet hors plan, admin autorisé sur les deux.
+
 ## [0.5.1] - 2026-08-05
 
 ### Modifié
