@@ -5,6 +5,7 @@ import { renderRadar, renderGauges } from './radar.js';
 import { escapeHtml } from './utils.js';
 import { renderVuePriorite } from './vuePriorite.js';
 import { renderVueProjets } from './vueProjets.js';
+import { renderVueSynthese } from './vueSynthese.js';
 
 const loginScreen = document.getElementById('login-screen');
 const contentScreen = document.getElementById('content-screen');
@@ -107,7 +108,7 @@ loginForm.addEventListener('submit', async (e) => {
 // ----------------------------------------------------------------------------
 // Navigation entre vues + chargement des données
 // ----------------------------------------------------------------------------
-let currentView = 'overview'; // 'overview' | 'orientation' | 'priorite' | 'projets'
+let currentView = 'overview'; // 'overview' | 'orientation' | 'priorite' | 'projets' | 'synthese'
 let planTree = null;
 
 document.querySelector('.view-nav').addEventListener('click', (e) => {
@@ -124,6 +125,7 @@ function renderCurrentView() {
   else if (currentView === 'orientation') renderVueOrientation();
   else if (currentView === 'priorite') renderVuePriorite(planTree, rafraichirDonnees);
   else if (currentView === 'projets') renderVueProjets(planTree, rafraichirDonnees);
+  else if (currentView === 'synthese') renderVueSynthese(planTree);
 }
 
 async function chargerPlanEtAfficher() {

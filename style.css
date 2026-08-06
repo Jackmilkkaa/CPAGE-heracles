@@ -1209,3 +1209,72 @@ main { padding: 2rem; }
   margin-left: var(--space-2);
   white-space: nowrap;
 }
+/* ============================================================================
+   Synthèse chiffrée — tableau tri/filtre/export CSV
+   ============================================================================ */
+.table-container {
+  background: white;
+  border-radius: 4px;
+  padding: var(--space-4);
+  overflow-x: auto;
+}
+.table-controls {
+  display: flex;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+  align-items: center;
+  flex-wrap: wrap;
+}
+.table-controls input[type="search"] {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--gris-clair);
+  border-radius: 3px;
+  font-family: var(--font-body);
+  font-size: var(--fs-sm);
+  min-width: 220px;
+}
+.table-controls select {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--gris-clair);
+  border-radius: 3px;
+  font-family: var(--font-body);
+  font-size: var(--fs-sm);
+  background: white;
+}
+table.synth-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-sm);
+}
+table.synth-table th {
+  text-align: left;
+  padding: var(--space-3) var(--space-2);
+  background: var(--bleu-nuit);
+  color: white;
+  font-weight: 600;
+  font-size: var(--fs-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  user-select: none;
+}
+table.synth-table th:hover { background: var(--bleu-profond); }
+table.synth-table td {
+  padding: var(--space-2);
+  border-bottom: 1px solid var(--gris-tres-clair);
+}
+table.synth-table tr:hover td { background: var(--gris-tres-clair); }
+table.synth-table td.num {
+  font-family: monospace;
+  font-weight: 600;
+  text-align: right;
+}
+table.synth-table td.nc { color: var(--av-nc); font-style: italic; }
+.statut-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 6px;
+  vertical-align: middle;
+}

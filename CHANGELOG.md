@@ -3,6 +3,18 @@
 Toutes les évolutions notables de ce projet sont documentées ici.
 Convention : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) + [semver](https://semver.org/lang/fr/).
 
+## [0.7.0] - 2026-08-05
+
+### Ajouté
+- Synthèse chiffrée : tableau des 24 priorités (orientation, axe, avancement
+  calculé, avancement effectif, écart, statut, commentaire), tri par colonne
+  (clic sur l'en-tête), filtres (recherche, orientation, statut), export CSV.
+- Module `vueSynthese.js`. Vue en lecture seule, pas de callback de
+  rafraîchissement nécessaire.
+- Les 5 vues du prototype local v1 sont maintenant toutes portées sur la
+  version connectée Supabase : Vue d'ensemble, Par orientation, Par
+  priorité, Projets, Synthèse chiffrée.
+
 ## [0.6.0] - 2026-08-05
 
 ### Ajouté
