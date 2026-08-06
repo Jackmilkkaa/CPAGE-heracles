@@ -107,8 +107,8 @@ export function renderRadar(slotId, items, title) {
     if (items[i].fullLabel) {
       const shortLabel = items[i].label;
       const fullText = items[i].fullLabel;
-      const maxCharsPerLine = n <= 3 ? 10 : (n <= 4 ? 8 : (n <= 5 ? 7 : 6));
-      const maxLines = n <= 4 ? 7 : 6;
+      const maxCharsPerLine = n <= 3 ? 28 : (n <= 4 ? 22 : (n <= 5 ? 18 : 15));
+      const maxLines = n <= 4 ? 5 : 4;
       const lines = wrapLabel(fullText, maxCharsPerLine, maxLines);
       const valueText = items[i].value === null || items[i].value === undefined ? 'nr' : fmtPct(items[i].value);
       const lineH = 30;

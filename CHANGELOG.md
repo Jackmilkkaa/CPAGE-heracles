@@ -3,6 +3,15 @@
 Toutes les évolutions notables de ce projet sont documentées ici.
 Convention : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) + [semver](https://semver.org/lang/fr/).
 
+## [0.7.2] - 2026-08-05
+
+### Modifié
+- Largeur de ligne des libellés du radar objectifs fortement élargie
+  (10/8/7/6 → 28/22/18/15 caractères par ligne). Le texte peut désormais
+  chevaucher légèrement le disque du radar plutôt que de s'empiler mot par
+  mot sur une colonne trop étroite — le radar restant semi-transparent, les
+  zones dessous restent lisibles malgré le chevauchement.
+
 ## [0.7.1] - 2026-08-05
 
 ### Ajouté
