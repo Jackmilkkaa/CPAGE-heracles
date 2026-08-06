@@ -47,7 +47,7 @@ function wrapLabel(text, maxCharsPerLine, maxLines) {
 }
 
 // items : [{ label, code, title, value, override, onClick, fullLabel? }]
-export function renderRadar(slotId, items, title) {
+export function renderRadar(slotId, items, title, quadrantLabels) {
   const slot = document.getElementById(slotId);
   const n = items.length;
   const hasFullLabels = items.some(it => it.fullLabel);
@@ -123,6 +123,16 @@ export function renderRadar(slotId, items, title) {
       svg.push(`<text class="radar-label-full" text-anchor="${anchor}"${clickCursor} data-idx="${i}">${inner}</text>`);
     } else {
       svg.push(`<text class="${cls}" x="${lx}" y="${ly + 4}" text-anchor="${anchor}"${clickCursor} data-idx="${i}">${escapeHtml(items[i].label)}</text>`);
+    }
+  }
+
+  if (quadrantLabels && quadrantLabels.length) {
+    for (const ql of quadrantLabels) {
+      const ang = (Math.PI * 2 * ql.atIndex / n) - Math.PI / 2;
+      const rr = R * 0.55;
+      const x = cx + Math.cos(ang) * rr;
+      const y = cy + Math.sin(ang) * rr;
+      svg.push(`<text class="radar-quadrant-label" x="${x}" y="${y}" text-anchor="middle">${escapeHtml(ql.label)}</text>`);
     }
   }
 

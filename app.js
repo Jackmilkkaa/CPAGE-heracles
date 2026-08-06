@@ -156,7 +156,7 @@ async function rafraichirDonnees() {
 // Vue d'ensemble : bandeau vision/mission/ambition, radar + jauges, bascule
 // priorité/axe, tri par numéro ou par avancement.
 // ----------------------------------------------------------------------------
-let overviewMode = 'orientation'; // 'orientation' | 'axe' | 'priorite'
+let overviewMode = 'axe'; // 'axe' | 'priorite'
 let overviewSort = 'numero';   // 'numero' | 'asc' | 'desc'
 
 function renderVueEnsemble() {
@@ -170,7 +170,6 @@ function renderVueEnsemble() {
         <div class="subtitle">Avancement global : <strong>${fmtPct(avancementGlobal(planTree.orientations))}</strong></div>
       </div>
       <div class="segment-control">
-        <button class="${overviewMode === 'orientation' ? 'active' : ''}" data-mode="orientation">Par orientation (4)</button>
         <button class="${overviewMode === 'axe' ? 'active' : ''}" data-mode="axe">Par axe (8)</button>
         <button class="${overviewMode === 'priorite' ? 'active' : ''}" data-mode="priorite">Par priorité (24)</button>
       </div>
@@ -192,7 +191,7 @@ function renderVueEnsemble() {
         <div class="radar-container" id="radar-slot"></div>
       </div>
       <div class="card">
-        <div class="card-title">${overviewMode === 'priorite' ? 'Par priorités d\u2019action' : (overviewMode === 'axe' ? 'Par axes' : 'Par orientations')}</div>
+        <div class="card-title">${overviewMode === 'priorite' ? 'Par priorités d\u2019action' : 'Par axes'}</div>
         <div class="gauge-sort-header">
           <button class="sort-icon-btn ${overviewSort === 'numero' ? 'active' : ''}" data-sort="numero">#</button>
           <button class="sort-icon-btn ${overviewSort !== 'numero' ? 'active' : ''}" data-sort="toggle-value">
@@ -218,12 +217,8 @@ function renderVueEnsemble() {
 
 function dessinerRadarEtJauges() {
   let items;
-  if (overviewMode === 'orientation') {
-    items = planTree.orientations.map(o => {
-      const av = avancementOrientation(o);
-      return { label: o.id, fullLabel: o.intitule, code: o.id, title: o.intitule, value: av.value, override: av.override };
-    });
-  } else if (overviewMode === 'priorite') {
+  let quadrantLabels = null;
+  if (overviewMode === 'priorite') {
     items = planTree.prioritesPlats.map(pa => {
       const av = avancementPriorite(pa);
       return { label: '#' + pa.numero, code: pa.id, title: pa.intitule, value: av.value, override: av.override };
@@ -233,9 +228,15 @@ function dessinerRadarEtJauges() {
       const av = avancementAxe(ax);
       return { label: ax.id.replace('-', ' '), code: ax.id, title: (ax._orientation ? ax._orientation.intitule + ' · ' : '') + ax.intitule, value: av.value, override: av.override };
     });
+    // Chaque orientation possède 2 axes consécutifs : avec 8 axes répartis
+    // régulièrement, le premier axe de chaque orientation tombe exactement
+    // au nord, à l'est, au sud et à l'ouest. On affiche son intitulé à cette
+    // position, en surimpression légère, pour lire d'un coup d'œil sur
+    // quelle orientation le plan progresse le plus sans changer de vue.
+    quadrantLabels = planTree.orientations.map((o, i) => ({ atIndex: i * 2, label: o.intitule }));
   }
 
-  renderRadar('radar-slot', items, overviewMode === 'priorite' ? 'Radar par priorité' : (overviewMode === 'axe' ? 'Radar par axe' : 'Radar par orientation'));
+  renderRadar('radar-slot', items, overviewMode === 'priorite' ? 'Radar par priorité' : 'Radar par axe', quadrantLabels);
 
   const sorted = items.slice();
   if (overviewSort === 'asc') sorted.sort((a, b) => (a.value === null ? 999 : a.value) - (b.value === null ? 999 : b.value));

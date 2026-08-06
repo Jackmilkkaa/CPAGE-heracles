@@ -3,6 +3,19 @@
 Toutes les évolutions notables de ce projet sont documentées ici.
 Convention : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) + [semver](https://semver.org/lang/fr/).
 
+## [0.8.1] - 2026-08-05
+
+### Modifié
+- Retiré le mode "Par orientation (4)" ajouté en 0.8.0 : le mode "Par axe"
+  suffisait déjà pour une lecture synthétique.
+- À la place, les 4 intitulés d'orientation apparaissent en surimpression
+  légère sur le radar par axe, aux positions nord/est/sud/ouest (chaque
+  orientation possède 2 axes consécutifs, avec 8 axes répartis
+  régulièrement le premier axe de chacune tombe exactement sur ces quatre
+  points). Permet de situer l'orientation sans changer de vue.
+- Mode par défaut de la Vue d'ensemble : "Par axe" (au lieu de "orientation"
+  puis retiré).
+
 ## [0.8.0] - 2026-08-05
 
 ### Ajouté
