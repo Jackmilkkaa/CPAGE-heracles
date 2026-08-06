@@ -82,6 +82,14 @@ export function renderVuePriorite(tree, onChanged) {
         </div>
         ${pa.conviction ? `<div class="pa-conviction">« ${escapeHtml(pa.conviction)} »</div>` : ''}
         ${pa.contexte ? `<div class="pa-contexte-inline"><h5>Contexte et enjeux</h5><p>${escapeHtml(pa.contexte)}</p></div>` : ''}
+        ${(pa.conviction_complete || pa.contexte_complet) ? `
+        <div>
+          <button class="btn btn-mini btn-light" id="btn-fiche-complete" style="width:100%">📄 Lire la fiche complète</button>
+          <div id="fiche-complete-panel" class="pa-contexte-inline" hidden style="margin-top:8px">
+            ${pa.conviction_complete ? `<h5>Conviction</h5><p>${escapeHtml(pa.conviction_complete)}</p>` : ''}
+            ${pa.contexte_complet ? `<h5 style="margin-top:12px">Contexte et enjeux (intégral)</h5><p>${escapeHtml(pa.contexte_complet)}</p>` : ''}
+          </div>
+        </div>` : ''}
       </div>
       <div class="pa-radar-col card">
         <div class="card-title">Objectifs de la priorité</div>
@@ -100,6 +108,14 @@ export function renderVuePriorite(tree, onChanged) {
   document.getElementById('pa-prev').addEventListener('click', () => { currentIndex--; renderVuePriorite(planTree, onDataChanged); });
   document.getElementById('pa-next').addEventListener('click', () => { currentIndex++; renderVuePriorite(planTree, onDataChanged); });
   document.getElementById('pa-select').addEventListener('change', (e) => { currentIndex = parseInt(e.target.value); renderVuePriorite(planTree, onDataChanged); });
+
+  const ficheBtn = document.getElementById('btn-fiche-complete');
+  if (ficheBtn) {
+    ficheBtn.addEventListener('click', () => {
+      const panel = document.getElementById('fiche-complete-panel');
+      panel.hidden = !panel.hidden;
+    });
+  }
 
   const objs = pa.objectifs;
   if (objs.length >= 3) {

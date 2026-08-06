@@ -3,6 +3,23 @@
 Toutes les évolutions notables de ce projet sont documentées ici.
 Convention : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) + [semver](https://semver.org/lang/fr/).
 
+## [0.7.1] - 2026-08-05
+
+### Ajouté
+- Contenu complet des 24 fiches (conviction et contexte non tronqués,
+  ré-extraits des PDF sources) directement en base, plutôt qu'un lien vers
+  un fichier PDF externe à héberger séparément. Bouton "Lire la fiche
+  complète" dans la vue par priorité, dépliable.
+- Migration `0005_fiches_completes.sql` (colonnes `conviction_complete`,
+  `contexte_complet`) + seed complémentaire, testés.
+- Corrigé au passage : un artefact d'extraction PDF (`i\x02service` au lieu
+  de `i-service`) présent uniquement sur la fiche #24.
+
+### Retiré du plan initial
+- L'idée d'un bouton "Fiche PDF" pointant vers un fichier externe est
+  abandonnée au profit de ce contenu intégré : plus simple, pas de
+  dépendance à un chemin de fichiers à maintenir.
+
 ## [0.7.0] - 2026-08-05
 
 ### Ajouté
