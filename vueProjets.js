@@ -4,7 +4,7 @@
 // ============================================================================
 import { escapeHtml } from './utils.js';
 import * as M from './mutations.js';
-import { ouvrirModalProjet, POLES, STATUTS, labelStatut } from './projetModal.js';
+import { ouvrirModalProjet, STATUTS, labelStatut } from './projetModal.js';
 
 let planTree = null;
 let onDataChanged = null;
@@ -53,7 +53,7 @@ export function renderVueProjets(tree, onChanged) {
 
     <div class="projets-toolbar">
       <input type="search" id="f-q" placeholder="Rechercher..." value="${escapeHtml(filtres.q)}">
-      <select id="f-pole"><option value="">Tous pôles</option>${POLES.map(p => `<option value="${p}" ${filtres.pole === p ? 'selected' : ''}>${p}</option>`).join('')}</select>
+      <select id="f-pole"><option value="">Tous pôles</option>${(planTree.poles || []).map(p => `<option value="${p.code}" ${filtres.pole === p.code ? 'selected' : ''}>${escapeHtml(p.libelle)}</option>`).join('')}</select>
       <select id="f-statut"><option value="">Tous statuts</option>${STATUTS.map(s => `<option value="${s.code}" ${filtres.statut === s.code ? 'selected' : ''}>${s.label}</option>`).join('')}</select>
       <select id="f-origine">
         <option value="">Toutes origines</option>

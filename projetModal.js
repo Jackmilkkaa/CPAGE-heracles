@@ -7,7 +7,6 @@ import { escapeHtml } from './utils.js';
 import { supabase } from './client.js';
 import * as M from './mutations.js';
 
-export const POLES = ['GAP', 'GEF', 'GRH', 'TEC', 'TRANSVERSES', 'DIRECTION'];
 export const STATUTS = [
   { code: 'non_demarre', label: 'Non démarré' },
   { code: 'en_cours', label: 'En cours' },
@@ -77,7 +76,7 @@ export function ouvrirModalProjet(projetId, planTree, onDataChanged) {
           <div class="form-field wide"><label>Intitulé</label><input type="text" id="f-intitule" value="${escapeHtml(prj.intitule || '')}"></div>
           <div class="form-field wide"><label>Description</label><textarea id="f-description" rows="2">${escapeHtml(prj.description || '')}</textarea></div>
           <div class="form-field"><label>Pôle responsable</label>
-            <select id="f-pole-resp"><option value="">—</option>${POLES.map(p => `<option value="${p}" ${prj.pole_responsable === p ? 'selected' : ''}>${p}</option>`).join('')}</select>
+            <select id="f-pole-resp"><option value="">—</option>${(planTree.poles || []).map(p => `<option value="${p.code}" ${prj.pole_responsable === p.code ? 'selected' : ''}>${escapeHtml(p.libelle)}</option>`).join('')}</select>
           </div>
           <div class="form-field"><label>Statut</label>
             <select id="f-statut-modal">${STATUTS.map(s => `<option value="${s.code}" ${(prj.statut || 'non_demarre') === s.code ? 'selected' : ''}>${s.label}</option>`).join('')}</select>

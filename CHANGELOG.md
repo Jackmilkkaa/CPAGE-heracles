@@ -3,6 +3,23 @@
 Toutes les évolutions notables de ce projet sont documentées ici.
 Convention : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) + [semver](https://semver.org/lang/fr/).
 
+## [0.10.0] - 2026-08-17
+
+### Ajouté
+- Table `heracles.poles_disponibles` : la liste des pôles (GAP, GEF, GRH,
+  TEC, Transverses, Direction) est désormais éditable en base plutôt que
+  codée en dur dans le frontend. Ajouter/renommer/retirer un pôle se fait
+  en SQL, sans modification de code ni redéploiement.
+- Écriture réservée à l'admin (nomenclature partagée, pas de donnée de
+  pilotage courante), lecture ouverte à tous les authentifiés. Testé :
+  éditeur bloqué en écriture, admin autorisé, lecture ok pour tous.
+- Migration `0006_poles_variabilises.sql`.
+
+### Modifié
+- `data.js` charge la liste des pôles avec le reste du plan.
+- `projetModal.js` et `vueProjets.js` : le tableau `POLES` codé en dur est
+  retiré, les dropdowns pôle utilisent désormais `planTree.poles`.
+
 ## [0.9.0] - 2026-08-05
 
 ### Ajouté

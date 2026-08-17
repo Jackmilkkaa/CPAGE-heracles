@@ -20,6 +20,7 @@ export async function chargerPlanComplet() {
     { data: impacts, error: e6 },
     { data: projets, error: e7 },
     { data: planMeta, error: e8 },
+    { data: poles, error: e9 },
   ] = await Promise.all([
     supabase.from('orientations').select('*').order('id'),
     supabase.from('axes').select('*').order('id'),
@@ -29,17 +30,18 @@ export async function chargerPlanComplet() {
     supabase.from('impacts').select('*'),
     supabase.from('projets').select('*'),
     supabase.from('plan_meta').select('*').maybeSingle(),
+    supabase.from('poles_disponibles').select('*').order('ordre'),
   ]);
 
-  const firstError = e1 || e2 || e3 || e4 || e5 || e6 || e7 || e8;
+  const firstError = e1 || e2 || e3 || e4 || e5 || e6 || e7 || e8 || e9;
   if (firstError) throw firstError;
 
-  return assemblerArbre({ orientations, axes, priorites, objectifs, resultatsCles, impacts, projets, planMeta });
+  return assemblerArbre({ orientations, axes, priorites, objectifs, resultatsCles, impacts, projets, planMeta, poles });
 }
 
 // Séparée de chargerPlanComplet() pour pouvoir être testée avec des données
 // factices, sans dépendre du réseau ni de Supabase.
-export function assemblerArbre({ orientations, axes, priorites, objectifs, resultatsCles, impacts, projets, planMeta }) {
+export function assemblerArbre({ orientations, axes, priorites, objectifs, resultatsCles, impacts, projets, planMeta, poles }) {
   const projetsById = new Map(projets.map(p => [p.id, p]));
 
   const impactsByObjectif = new Map();
@@ -100,6 +102,7 @@ export function assemblerArbre({ orientations, axes, priorites, objectifs, resul
     axesPlats: toutesAxes,
     prioritesPlats: toutesPriorites,
     projetsPlats: projets,
+    poles: poles || [],
     planMeta,
   };
 }
