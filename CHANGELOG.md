@@ -3,6 +3,31 @@
 Toutes les évolutions notables de ce projet sont documentées ici.
 Convention : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) + [semver](https://semver.org/lang/fr/).
 
+## [0.11.0] - 2026-08-17
+
+### Corrigé
+- **Titre/description des 138 projets** : le découpage initial (heuristique
+  sur les majuscules, sans signal fiable) faisait déborder le début de la
+  description dans le titre pour la plupart des projets (ex. PRJ068
+  "Smart Dev Factory Évaluer et déployer une nouvelle" au lieu de
+  "Smart Dev Factory"). Ré-extraction depuis le PDF source du plan complet,
+  en utilisant cette fois le vrai signal de mise en forme (gras = titre,
+  texte normal = description) via `pdftohtml -xml`, qui préserve les
+  balises `<b>`. Les 138 entrées vérifiées une par une (aucune description
+  vide, aucune anomalie de structure), plusieurs échantillons croisés
+  manuellement avec le texte source avant migration.
+- **Bug de conception découvert en même temps** : le trigger de protection
+  des projets natifs (`protect_reference_columns`) était en
+  `security definer`, ce qui fait que `current_user` à l'intérieur de la
+  fonction reflétait le propriétaire de la fonction (postgres), pas
+  l'appelant réel. Conséquence potentielle si non corrigée : soit bloquer
+  les migrations légitimes, soit — pire — désactiver silencieusement toute
+  la protection contre les éditeurs. Retiré `security definer` (la fonction
+  n'en a pas besoin). Trois scénarios testés et confirmés : éditeur bloqué
+  via l'appli, admin autorisé via l'appli, migration/SQL Editor autorisée.
+- Migrations `0007_fix_trigger_protection_admin.sql` et
+  `0008_fix_projets_titre_description.sql`.
+
 ## [0.10.0] - 2026-08-17
 
 ### Ajouté
