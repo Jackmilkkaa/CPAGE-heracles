@@ -235,6 +235,7 @@ main { padding: 2rem; }
 .overview-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
+  align-items: start;
   gap: var(--space-6);
   margin-bottom: var(--space-6);
 }

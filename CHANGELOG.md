@@ -3,6 +3,18 @@
 Toutes les évolutions notables de ce projet sont documentées ici.
 Convention : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) + [semver](https://semver.org/lang/fr/).
 
+## [0.12.1] - 2026-08-21
+
+### Corrigé
+- **Taille du radar instable en "Vue d'ensemble"** : la grille à deux
+  colonnes (radar / jauges) étirait par défaut les deux colonnes à la même
+  hauteur, or le nombre de lignes de jauges varie selon le mode (8 axes vs
+  24 priorités) et le scope (2 axes d'une orientation vs 8 en vue globale).
+  La colonne du radar était donc étirée pour matcher la colonne des
+  jauges, donnant l'impression que sa taille changeait en changeant de
+  sous-onglet. Chaque colonne a désormais sa propre hauteur, indépendante
+  de sa voisine (`align-items: start` sur `.overview-grid`).
+
 ## [0.12.0] - 2026-08-21
 
 ### Changé
