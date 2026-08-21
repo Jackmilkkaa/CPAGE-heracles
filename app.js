@@ -108,7 +108,7 @@ loginForm.addEventListener('submit', async (e) => {
 // ----------------------------------------------------------------------------
 // Navigation entre vues + chargement des données
 // ----------------------------------------------------------------------------
-let currentView = 'overview'; // 'overview' | 'orientation' | 'priorite' | 'projets' | 'synthese'
+let currentView = 'overview'; // 'overview' | 'priorite' | 'projets' | 'synthese'
 let planTree = null;
 
 document.querySelector('.view-nav').addEventListener('click', (e) => {
@@ -129,9 +129,9 @@ function naviguerVersPriorite(prioriteId) {
 }
 
 function naviguerVersOrientation(orientationId) {
-  currentOrientationId = orientationId;
-  currentView = 'orientation';
-  document.querySelectorAll('.view-nav button').forEach(b => b.classList.toggle('active', b.dataset.view === 'orientation'));
+  overviewScope = orientationId;
+  currentView = 'overview';
+  document.querySelectorAll('.view-nav button').forEach(b => b.classList.toggle('active', b.dataset.view === 'overview'));
   renderCurrentView();
 }
 
@@ -143,7 +143,6 @@ function renderCurrentView() {
   gv.classList.toggle('nc', g === null);
 
   if (currentView === 'overview') renderVueEnsemble();
-  else if (currentView === 'orientation') renderVueOrientation();
   else if (currentView === 'priorite') renderVuePriorite(planTree, rafraichirDonnees);
   else if (currentView === 'projets') renderVueProjets(planTree, rafraichirDonnees);
   else if (currentView === 'synthese') renderVueSynthese(planTree);
@@ -179,24 +178,62 @@ async function rafraichirDonnees() {
 // ----------------------------------------------------------------------------
 let overviewMode = 'axe'; // 'axe' | 'priorite'
 let overviewSort = 'numero';   // 'numero' | 'asc' | 'desc'
+// null = vue globale (les 4 orientations confondues) ; sinon id d'une
+// orientation sur laquelle la vue d'ensemble est recadrée. Remplace l'ancien
+// onglet "Par orientation" : ce n'est plus une vue à part, mais un filtre de
+// périmètre appliqué au même radar et aux mêmes jauges.
+let overviewScope = null;
 
 function renderVueEnsemble() {
   const slot = document.getElementById('view-slot');
   const m = planTree.planMeta || {};
+  const orient = overviewScope ? planTree.orientations.find(o => o.id === overviewScope) : null;
+  // Filet de sécurité : si le scope pointe vers une orientation qui n'existe
+  // plus dans les données rechargées, on retombe sur la vue globale plutôt
+  // que d'afficher un écran vide.
+  if (overviewScope && !orient) overviewScope = null;
+
+  const scopeTiles = [
+    `<button class="orient-tile ${!overviewScope ? 'active' : ''}" data-orient="">
+      <div class="code">Global</div>
+      <div class="title">Toutes orientations</div>
+      <div class="val">${fmtPct(avancementGlobal(planTree.orientations))}</div>
+    </button>`,
+    ...planTree.orientations.map(o => {
+      const av = avancementOrientation(o);
+      return `
+        <button class="orient-tile ${o.id === overviewScope ? 'active' : ''}" data-orient="${o.id}">
+          <div class="code">${escapeHtml(o.id)}</div>
+          <div class="title">${escapeHtml(o.intitule)}</div>
+          <div class="val ${av.value === null ? 'nc' : ''}">${fmtPct(av.value)}</div>
+        </button>
+      `;
+    }),
+  ].join('');
+
+  const nbAxes = orient ? orient.axes.length : planTree.axesPlats.length;
+  const nbPriorites = orient
+    ? orient.axes.reduce((n, ax) => n + ax.priorites.length, 0)
+    : planTree.prioritesPlats.length;
 
   slot.innerHTML = `
     <div class="overview-header">
       <div>
-        <h2>Vue d'ensemble du plan</h2>
-        <div class="subtitle">Avancement global : <strong>${fmtPct(avancementGlobal(planTree.orientations))}</strong></div>
+        <h2>${orient ? escapeHtml(orient.id) + ' · ' + escapeHtml(orient.intitule) : "Vue d'ensemble du plan"}</h2>
+        <div class="subtitle">${orient ? "Avancement de l'orientation" : 'Avancement global'} : <strong>${fmtPct(orient ? avancementOrientation(orient).value : avancementGlobal(planTree.orientations))}</strong></div>
       </div>
       <div class="segment-control">
-        <button class="${overviewMode === 'axe' ? 'active' : ''}" data-mode="axe">Par axe (8)</button>
-        <button class="${overviewMode === 'priorite' ? 'active' : ''}" data-mode="priorite">Par priorité (24)</button>
+        <button class="${overviewMode === 'axe' ? 'active' : ''}" data-mode="axe">Par axe (${nbAxes})</button>
+        <button class="${overviewMode === 'priorite' ? 'active' : ''}" data-mode="priorite">Par priorité (${nbPriorites})</button>
       </div>
     </div>
 
-    ${(m.vision || m.mission || m.ambition) ? `
+    <div class="orient-selector">${scopeTiles}</div>
+
+    ${orient ? `
+    <div class="vision-block">
+      <p style="margin-bottom:0">${escapeHtml(orient.description || '')}</p>
+    </div>` : (m.vision || m.mission || m.ambition) ? `
     <div class="vision-block">
       <h3>Vision · Mission · Ambition</h3>
       <div class="vision-grid">
@@ -224,6 +261,9 @@ function renderVueEnsemble() {
     </div>
   `;
 
+  slot.querySelectorAll('.orient-tile').forEach(btn => {
+    btn.addEventListener('click', () => { overviewScope = btn.dataset.orient || null; renderVueEnsemble(); });
+  });
   slot.querySelectorAll('.segment-control button').forEach(btn => {
     btn.addEventListener('click', () => { overviewMode = btn.dataset.mode; renderVueEnsemble(); });
   });
@@ -233,33 +273,42 @@ function renderVueEnsemble() {
     renderVueEnsemble();
   });
 
-  dessinerRadarEtJauges();
+  dessinerRadarEtJauges(orient);
 }
 
-function dessinerRadarEtJauges() {
+function dessinerRadarEtJauges(orient) {
   let items;
   let quadrantLabels = null;
   if (overviewMode === 'priorite') {
-    items = planTree.prioritesPlats.map(pa => {
+    const priorites = orient
+      ? orient.axes.flatMap(ax => ax.priorites)
+      : planTree.prioritesPlats;
+    items = priorites.map(pa => {
       const av = avancementPriorite(pa);
       return { label: '#' + pa.numero, code: pa.id, title: pa.intitule, value: av.value, override: av.override, onClick: () => naviguerVersPriorite(pa.id) };
     });
+    items.sort((a, b) => parseInt(a.label.slice(1)) - parseInt(b.label.slice(1)));
   } else {
-    items = planTree.axesPlats.map(ax => {
+    const axes = orient
+      ? planTree.axesPlats.filter(ax => ax._orientation && ax._orientation.id === orient.id)
+      : planTree.axesPlats;
+    items = axes.map(ax => {
       const av = avancementAxe(ax);
       return {
         label: ax.id.replace('-', ' '), code: ax.id,
         title: (ax._orientation ? ax._orientation.intitule + ' · ' : '') + ax.intitule,
         value: av.value, override: av.override,
-        onClick: ax._orientation ? () => naviguerVersOrientation(ax._orientation.id) : null,
+        onClick: (!orient && ax._orientation) ? () => naviguerVersOrientation(ax._orientation.id) : null,
       };
     });
-    // Chaque orientation possède 2 axes consécutifs : avec 8 axes répartis
-    // régulièrement, le premier axe de chaque orientation tombe exactement
-    // au nord, à l'est, au sud et à l'ouest. On affiche son intitulé à cette
-    // position, en surimpression légère, pour lire d'un coup d'œil sur
-    // quelle orientation le plan progresse le plus sans changer de vue.
-    quadrantLabels = planTree.orientations.map((o, i) => ({ atIndex: i * 2, label: o.intitule }));
+    if (!orient) {
+      // Chaque orientation possède 2 axes consécutifs : avec 8 axes répartis
+      // régulièrement, le premier axe de chaque orientation tombe exactement
+      // au nord, à l'est, au sud et à l'ouest. On affiche son intitulé à cette
+      // position, en surimpression légère, pour lire d'un coup d'œil sur
+      // quelle orientation le plan progresse le plus sans changer de vue.
+      quadrantLabels = planTree.orientations.map((o, i) => ({ atIndex: i * 2, label: o.intitule }));
+    }
   }
 
   renderRadar('radar-slot', items, overviewMode === 'priorite' ? 'Radar par priorité' : 'Radar par axe', quadrantLabels);
@@ -268,74 +317,6 @@ function dessinerRadarEtJauges() {
   if (overviewSort === 'asc') sorted.sort((a, b) => (a.value === null ? 999 : a.value) - (b.value === null ? 999 : b.value));
   else if (overviewSort === 'desc') sorted.sort((a, b) => (b.value === null ? -1 : b.value) - (a.value === null ? -1 : a.value));
   renderGauges('gauge-slot', sorted);
-}
-
-// ----------------------------------------------------------------------------
-// Vue par orientation : sélecteur à 4 tuiles, description, jauges des axes
-// et des priorités de l'orientation sélectionnée.
-// ----------------------------------------------------------------------------
-let currentOrientationId = null;
-
-function renderVueOrientation() {
-  const slot = document.getElementById('view-slot');
-
-  if (!currentOrientationId || !planTree.orientations.some(o => o.id === currentOrientationId)) {
-    currentOrientationId = planTree.orientations[0] ? planTree.orientations[0].id : null;
-  }
-  const orient = planTree.orientations.find(o => o.id === currentOrientationId);
-  if (!orient) { slot.innerHTML = '<p>Aucune orientation disponible.</p>'; return; }
-
-  const tiles = planTree.orientations.map(o => {
-    const av = avancementOrientation(o);
-    return `
-      <button class="orient-tile ${o.id === currentOrientationId ? 'active' : ''}" data-orient="${o.id}">
-        <div class="code">${escapeHtml(o.id)}</div>
-        <div class="title">${escapeHtml(o.intitule)}</div>
-        <div class="val ${av.value === null ? 'nc' : ''}">${fmtPct(av.value)}</div>
-      </button>
-    `;
-  }).join('');
-
-  const axeItems = orient.axes.map(ax => {
-    const av = avancementAxe(ax);
-    return { label: ax.id, code: ax.id, title: ax.intitule, value: av.value, override: av.override };
-  });
-
-  const paItems = [];
-  for (const ax of orient.axes) {
-    for (const pa of ax.priorites) {
-      const av = avancementPriorite(pa);
-      paItems.push({ label: '#' + pa.numero, code: pa.id, title: pa.intitule, value: av.value, override: av.override, onClick: () => naviguerVersPriorite(pa.id) });
-    }
-  }
-  paItems.sort((a, b) => parseInt(a.label.slice(1)) - parseInt(b.label.slice(1)));
-
-  slot.innerHTML = `
-    <div class="orient-selector">${tiles}</div>
-
-    <div class="vision-block">
-      <h3>${escapeHtml(orient.id)} · ${escapeHtml(orient.intitule)}</h3>
-      <p style="margin-bottom:0">${escapeHtml(orient.description || '')}</p>
-    </div>
-
-    <div class="overview-grid">
-      <div class="card">
-        <div class="card-title">Axes de l'orientation</div>
-        <div class="gauge-list" id="axe-slot"></div>
-      </div>
-      <div class="card">
-        <div class="card-title">Priorités de l'orientation</div>
-        <div class="gauge-list" id="prio-slot"></div>
-      </div>
-    </div>
-  `;
-
-  slot.querySelectorAll('.orient-tile').forEach(btn => {
-    btn.addEventListener('click', () => { currentOrientationId = btn.dataset.orient; renderVueOrientation(); });
-  });
-
-  renderGauges('axe-slot', axeItems);
-  renderGauges('prio-slot', paItems);
 }
 
 // ----------------------------------------------------------------------------

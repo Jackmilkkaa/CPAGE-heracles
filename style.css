@@ -380,8 +380,9 @@ main { padding: 2rem; }
 .view-nav button.active { color: var(--bleu-cpage); border-bottom-color: var(--or-cpage); }
 
 /* Vue par orientation */
-.orient-selector { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-3); margin-bottom: var(--space-5); }
-@media (max-width: 900px) { .orient-selector { grid-template-columns: repeat(2, 1fr); } }
+.orient-selector { display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--space-3); margin-bottom: var(--space-5); }
+@media (max-width: 1100px) { .orient-selector { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 700px) { .orient-selector { grid-template-columns: repeat(2, 1fr); } }
 .orient-tile {
   background: white;
   border: 1px solid var(--gris-clair);

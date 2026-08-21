@@ -3,6 +3,22 @@
 Toutes les évolutions notables de ce projet sont documentées ici.
 Convention : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) + [semver](https://semver.org/lang/fr/).
 
+## [0.12.0] - 2026-08-21
+
+### Changé
+- **Fusion des onglets "Vue d'ensemble" et "Par orientation"** : les deux
+  vues portaient la même hiérarchie (Orientation > Axe > Priorité) sans le
+  dire, l'une en filtrant, l'autre en radar/jauges global. L'onglet "Par
+  orientation" disparaît : ses 4 tuiles deviennent un sélecteur de
+  périmètre (Global + 4 orientations) directement dans "Vue d'ensemble".
+  Cliquer une tuile recadre le radar et les jauges existants sur
+  l'orientation choisie (axes ou priorités selon le mode actif), sans
+  changer d'onglet ni de composant. Le bloc vision/mission/ambition est
+  remplacé par la description de l'orientation quand un scope est actif.
+- **Renommage de l'onglet "Par priorité" en "Priorités d'action"** : ce
+  n'est pas une vue de synthèse comme les autres, mais le détail fiche par
+  fiche de chaque priorité. Le nom reflète mieux ce que l'onglet contient.
+
 ## [0.11.0] - 2026-08-17
 
 ### Corrigé
