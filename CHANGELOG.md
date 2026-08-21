@@ -3,6 +3,24 @@
 Toutes les évolutions notables de ce projet sont documentées ici.
 Convention : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) + [semver](https://semver.org/lang/fr/).
 
+## [0.12.2] - 2026-08-21
+
+### Corrigé
+- **Vraie cause du bug de taille radar en mode "Par priorité"** : le fix
+  0.12.1 (`align-items: start`) ne suffisait pas. En mode priorité, les
+  intitulés longs des 24 priorités (`white-space: nowrap` +
+  `text-overflow: ellipsis` sur `.g-label`) forçaient les deux colonnes de
+  `.overview-grid` (`1fr 1fr`) à se dimensionner selon la largeur du texte
+  non coupé, car `overflow: hidden` sur `.g-label` ne neutralise ce calcul
+  qu'à son propre niveau, pas à celui de la grille parente. Résultat
+  mesuré : la carte radar tombait à 348px de large (au lieu de 634px),
+  la carte des jauges gonflait à 920px. Correctif : `minmax(0, 1fr)` au
+  lieu de `1fr` sur `.overview-grid` et sur la grille interne `.gauge-row`,
+  qui empêche tout track de dépasser sa part équitable à cause du contenu.
+  Vérifié avec Playwright (mesure directe des `getBoundingClientRect`
+  avant/après sur les 24 vrais intitulés de priorité) : le radar fait
+  désormais 584×584 dans les deux modes, à l'identique.
+
 ## [0.12.1] - 2026-08-21
 
 ### Corrigé

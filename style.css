@@ -234,7 +234,7 @@ main { padding: 2rem; }
 
 .overview-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   align-items: start;
   gap: var(--space-6);
   margin-bottom: var(--space-6);
@@ -285,7 +285,7 @@ main { padding: 2rem; }
 .gauge-list { display: flex; flex-direction: column; gap: var(--space-3); }
 .gauge-row {
   display: grid;
-  grid-template-columns: 3em 1fr auto;
+  grid-template-columns: 3em minmax(0, 1fr) auto;
   gap: var(--space-3);
   align-items: center;
   font-size: var(--fs-sm);
