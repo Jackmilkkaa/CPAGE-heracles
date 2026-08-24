@@ -745,7 +745,7 @@ main { padding: 2rem; }
 }
 .objectif-header-right {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: var(--space-4);
 }
 .objectif-mini-stat {
@@ -784,6 +784,37 @@ main { padding: 2rem; }
   font-weight: 400;
   margin-top: 2px;
   font-style: italic;
+}
+/* Le bloc ci-dessus suppose un fond sombre fourni par un conteneur parent
+   (.pa-info-avancement, en haut de la page priorité). Utilisé nu dans
+   l'en-tête d'une fiche objectif (.objectif-header), son "color: white" sur
+   le fond blanc de .objectif-card rendait le pourcentage invisible. On lui
+   donne ici son propre fond coloré, cohérent avec le niveau d'avancement. */
+.objectif-header .objectif-avancement {
+  font-size: var(--fs-md);
+  font-weight: 700;
+  line-height: 1;
+  padding: 5px 10px;
+  border-radius: 12px;
+  white-space: nowrap;
+}
+.objectif-header .objectif-avancement.av-rouge { background: var(--av-rouge); color: white; }
+.objectif-header .objectif-avancement.av-orange { background: var(--av-orange); color: white; }
+.objectif-header .objectif-avancement.av-jaunevert { background: var(--av-jaunevert); color: var(--anthracite); }
+.objectif-header .objectif-avancement.av-vert { background: var(--av-vert); color: white; }
+.objectif-header .objectif-avancement.av-nc {
+  background: var(--gris-tres-clair);
+  color: var(--av-nc);
+  font-style: italic;
+  font-weight: 400;
+}
+.objectif-header .objectif-avancement .calc-note {
+  display: block;
+  font-size: 0.6rem;
+  font-weight: 400;
+  font-style: italic;
+  opacity: 0.85;
+  margin-top: 1px;
 }
 .kr-list { display: flex; flex-direction: column; gap: var(--space-3); }
 .kr-row {

@@ -3,6 +3,18 @@
 Toutes les évolutions notables de ce projet sont documentées ici.
 Convention : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) + [semver](https://semver.org/lang/fr/).
 
+## [0.13.1] - 2026-08-24
+
+### Corrigé
+- **% d'avancement invisible sur chaque fiche Objectif** : le badge
+  `.objectif-avancement` était conçu pour un fond sombre fourni par un
+  conteneur parent (le bloc "Avancement de la priorité" en haut de page),
+  mais utilisé nu dans l'en-tête de chaque fiche objectif il affichait du
+  texte blanc sur fond blanc, donc invisible. Remplacé par une pastille
+  colorée selon le niveau (rouge/orange/jaune-vert/vert/non renseigné),
+  cohérente avec les couleurs utilisées ailleurs dans l'app. Vérifié par
+  capture d'écran après correctif.
+
 ## [0.13.0] - 2026-08-24
 
 ### Ajouté

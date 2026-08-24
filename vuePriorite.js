@@ -9,7 +9,7 @@
 // arrivera avec la Vue Projets. Ici, seuls statut/avancement/impacts sont
 // éditables en ligne, ce qui couvre l'essentiel de l'usage courant.
 // ============================================================================
-import { avancementObjectif, avancementPriorite, isProjetActif, fmtPct } from './calc.js';
+import { avancementObjectif, avancementPriorite, isProjetActif, fmtPct, classAvancement } from './calc.js';
 import { renderRadar, renderGauges } from './radar.js';
 import { escapeHtml } from './utils.js';
 import * as M from './mutations.js';
@@ -273,7 +273,7 @@ function renderObjectifCard(pa, obj, idx) {
         <div class="objectif-header-right">
           <span class="objectif-mini-stat" title="Résultats clés">🎯 ${(obj.resultats_cles || []).length}</span>
           <span class="objectif-mini-stat" title="Projets rattachés, actifs sur total">📁 ${actifs}/${linked.length}</span>
-          <div class="objectif-avancement ${av.value === null ? 'nc' : ''}">${fmtPct(av.value)}
+          <div class="objectif-avancement ${classAvancement(av.value)}">${fmtPct(av.value)}
             ${av.override ? `<span class="calc-note">manuel · calc ${fmtPct(av.calc)}</span>` : ''}
           </div>
         </div>
