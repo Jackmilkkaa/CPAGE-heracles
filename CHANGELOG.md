@@ -3,6 +3,30 @@
 Toutes les évolutions notables de ce projet sont documentées ici.
 Convention : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) + [semver](https://semver.org/lang/fr/).
 
+## [0.13.0] - 2026-08-24
+
+### Ajouté
+- **Radar "Objectifs de la priorité" cliquable** : chaque objectif (radar
+  ou jauges de secours si moins de 3 objectifs) déclenche un scroll fluide
+  et une brève surbrillance vers sa fiche complète plus bas sur la page.
+- **Compteurs sur chaque fiche Objectif** : à côté du % d'avancement déjà
+  présent dans l'en-tête, affichage du nombre de résultats clés et du
+  ratio projets actifs/total rattachés.
+- **Synthèse chiffrée, plier/déplier** : chaque ligne de PA peut se
+  déplier pour afficher ses objectifs et leur avancement individuel.
+  Bouton global "Tout déplier / Tout replier" dans l'en-tête. Le champ
+  Commentaire, jusqu'ici en lecture seule tronquée, est désormais un
+  input éditable relié à `updatePriorite` (`commentaire_pilotage`).
+- **Tri des cartes projets** : nouveau sélecteur (avancement croissant/
+  décroissant, date de fin prévue croissante/décroissante). La date de
+  fin prévue est affichée sur la carte quand elle existe ; les projets
+  sans date sont toujours relégués en fin de liste quel que soit le sens.
+
+Vérifié avec Playwright sur un jeu de données factice couvrant les 4
+évolutions (dépli, tout déplier/replier, édition commentaire, tri par
+avancement et par date, clic radar + scroll + surbrillance) : aucune
+erreur JS, comportements conformes.
+
 ## [0.12.2] - 2026-08-21
 
 ### Corrigé

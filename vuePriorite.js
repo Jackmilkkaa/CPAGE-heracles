@@ -25,6 +25,14 @@ export function irVersPriorite(prioriteId) {
   currentPrioriteId = prioriteId;
 }
 
+function scrollVersObjectif(objectifId) {
+  const card = document.querySelector(`[data-objectif-id="${objectifId}"]`);
+  if (!card) return;
+  card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  card.classList.add('objectif-highlight');
+  setTimeout(() => card.classList.remove('objectif-highlight'), 1600);
+}
+
 function notify(msg, kind = 'info') {
   const n = document.createElement('div');
   n.className = 'notice' + (kind !== 'info' ? ' ' + kind : '');
@@ -131,14 +139,14 @@ export function renderVuePriorite(tree, onChanged) {
   if (objs.length >= 3) {
     const items = objs.map((o, i) => {
       const a2 = avancementObjectif(o);
-      return { label: 'O' + (i + 1), fullLabel: o.intitule, code: o.id, title: o.intitule, value: a2.value, override: a2.override };
+      return { label: 'O' + (i + 1), fullLabel: o.intitule, code: o.id, title: o.intitule, value: a2.value, override: a2.override, onClick: () => scrollVersObjectif(o.id) };
     });
     renderRadar('pa-radar-slot', items, 'Objectifs de la priorité #' + pa.numero);
   } else {
     document.getElementById('pa-radar-slot').innerHTML = '<div class="gauge-list" id="pa-radar-fallback"></div>';
     const items = objs.map((o, i) => {
       const a2 = avancementObjectif(o);
-      return { label: 'O' + (i + 1), code: o.id, title: o.intitule, value: a2.value, override: a2.override };
+      return { label: 'O' + (i + 1), code: o.id, title: o.intitule, value: a2.value, override: a2.override, onClick: () => scrollVersObjectif(o.id) };
     });
     renderGauges('pa-radar-fallback', items);
   }
@@ -262,8 +270,12 @@ function renderObjectifCard(pa, obj, idx) {
     <div class="objectif-card" data-objectif-id="${obj.id}">
       <div class="objectif-header">
         <div class="objectif-title">O${idx + 1} · ${escapeHtml(obj.intitule)}</div>
-        <div class="objectif-avancement ${av.value === null ? 'nc' : ''}">${fmtPct(av.value)}
-          ${av.override ? `<span class="calc-note">manuel · calc ${fmtPct(av.calc)}</span>` : ''}
+        <div class="objectif-header-right">
+          <span class="objectif-mini-stat" title="Résultats clés">🎯 ${(obj.resultats_cles || []).length}</span>
+          <span class="objectif-mini-stat" title="Projets rattachés, actifs sur total">📁 ${actifs}/${linked.length}</span>
+          <div class="objectif-avancement ${av.value === null ? 'nc' : ''}">${fmtPct(av.value)}
+            ${av.override ? `<span class="calc-note">manuel · calc ${fmtPct(av.calc)}</span>` : ''}
+          </div>
         </div>
       </div>
 

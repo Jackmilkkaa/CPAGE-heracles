@@ -9,6 +9,7 @@ import { ouvrirModalProjet, STATUTS, labelStatut } from './projetModal.js';
 let planTree = null;
 let onDataChanged = null;
 let filtres = { q: '', pole: '', statut: '', origine: '', pa: '', boussole: '' };
+let tri = 'defaut'; // 'defaut' | 'avancement_desc' | 'avancement_asc' | 'date_fin_asc' | 'date_fin_desc'
 
 function getBoussoleYears() {
   const periode = (planTree.planMeta && planTree.planMeta.periode) || '2025-2030';
@@ -62,6 +63,13 @@ export function renderVueProjets(tree, onChanged) {
       </select>
       <select id="f-pa"><option value="">Toutes PA</option>${planTree.prioritesPlats.map(p => `<option value="${p.id}" ${filtres.pa === p.id ? 'selected' : ''}>#${p.numero} ${escapeHtml(p.intitule.substring(0, 50))}</option>`).join('')}</select>
       <select id="f-boussole"><option value="">Toutes (boussole ou non)</option>${boussoleYears.map(y => `<option value="${y}" ${String(filtres.boussole) === String(y) ? 'selected' : ''}>🧭 Boussole ${y}</option>`).join('')}</select>
+      <select id="f-tri">
+        <option value="defaut" ${tri === 'defaut' ? 'selected' : ''}>Tri par défaut</option>
+        <option value="avancement_desc" ${tri === 'avancement_desc' ? 'selected' : ''}>Avancement décroissant</option>
+        <option value="avancement_asc" ${tri === 'avancement_asc' ? 'selected' : ''}>Avancement croissant</option>
+        <option value="date_fin_asc" ${tri === 'date_fin_asc' ? 'selected' : ''}>Date de fin prévue, plus proche d'abord</option>
+        <option value="date_fin_desc" ${tri === 'date_fin_desc' ? 'selected' : ''}>Date de fin prévue, plus lointaine d'abord</option>
+      </select>
       <div class="projets-count" id="projets-count"></div>
     </div>
 
@@ -75,8 +83,35 @@ export function renderVueProjets(tree, onChanged) {
   document.getElementById('f-origine').addEventListener('change', (e) => { filtres.origine = e.target.value; renderGrid(); });
   document.getElementById('f-pa').addEventListener('change', (e) => { filtres.pa = e.target.value; renderGrid(); });
   document.getElementById('f-boussole').addEventListener('change', (e) => { filtres.boussole = e.target.value; renderGrid(); });
+  document.getElementById('f-tri').addEventListener('change', (e) => { tri = e.target.value; renderGrid(); });
 
   renderGrid();
+}
+
+function formatDateFr(isoDate) {
+  const d = new Date(isoDate + 'T00:00:00');
+  if (isNaN(d.getTime())) return isoDate;
+  return d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+
+function trierProjets(projets) {
+  if (tri === 'defaut') return;
+  if (tri === 'avancement_desc') {
+    projets.sort((a, b) => (b.avancement_pct || 0) - (a.avancement_pct || 0));
+  } else if (tri === 'avancement_asc') {
+    projets.sort((a, b) => (a.avancement_pct || 0) - (b.avancement_pct || 0));
+  } else if (tri === 'date_fin_asc' || tri === 'date_fin_desc') {
+    // Les projets sans date de fin prévue sont toujours relégués en fin de
+    // liste, quel que soit le sens du tri : une date manquante n'est ni "la
+    // plus proche" ni "la plus lointaine", elle n'est juste pas comparable.
+    projets.sort((a, b) => {
+      const da = a.date_fin_prevue, db = b.date_fin_prevue;
+      if (!da && !db) return 0;
+      if (!da) return 1;
+      if (!db) return -1;
+      return tri === 'date_fin_asc' ? da.localeCompare(db) : db.localeCompare(da);
+    });
+  }
 }
 
 function renderGrid() {
@@ -98,6 +133,8 @@ function renderGrid() {
     const year = parseInt(filtres.boussole);
     projets = projets.filter(p => (p.boussole_annees || []).includes(year));
   }
+
+  trierProjets(projets);
 
   document.getElementById('projets-count').textContent = `${projets.length} projet${projets.length > 1 ? 's' : ''} affiché${projets.length > 1 ? 's' : ''}`;
 
@@ -126,6 +163,7 @@ function renderTile(prj) {
       <div class="prj-meta">
         ${prj.pole_responsable ? `<span class="prj-badge pole">${escapeHtml(prj.pole_responsable)}</span>` : ''}
         ${paOrig ? `<span class="prj-badge pa">#${paOrig.numero}</span>` : ''}
+        ${prj.date_fin_prevue ? `<span class="prj-badge date" title="Date de fin prévue">📅 ${formatDateFr(prj.date_fin_prevue)}</span>` : ''}
       </div>
       <div class="prj-statut"><span class="statut-pill ${st}">${labelStatut(st)}</span><span style="font-family:monospace; font-weight:700; margin-left:auto">${av}%</span></div>
       <div class="prj-bar"><div class="prj-bar-fill" style="width:${av}%; background:var(--${cls})"></div></div>
