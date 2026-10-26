@@ -3,6 +3,29 @@
 Toutes les évolutions notables de ce projet sont documentées ici.
 Convention : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) + [semver](https://semver.org/lang/fr/).
 
+## [0.16.0] - 2026-10-26
+
+### Changé
+- **Synthèse chiffrée refondue** : tuiles de répartition par niveau d'avancement
+  (< 25 %, 25 à 50 %, 50 à 75 %, 75 % et plus, non renseignées) qui servent
+  aussi de filtre, tableau regroupé par orientation (repliable, avec
+  l'avancement de l'orientation), une seule colonne Avancement (barre + valeur)
+  à la place de Calculé / Effectif / Écart, badge « manuel » avec le calculé en
+  infobulle quand la valeur est forcée, vraies pastilles de statut, objectifs
+  dépliables alignés sur les colonnes, tri avec indicateur de sens (le
+  regroupement est suspendu quand on trie par autre chose que le numéro),
+  clic sur le titre d'une priorité pour ouvrir sa fiche. L'export CSV garde
+  toutes les colonnes (calculé, effectif, écart).
+- **Projets refondus** : tuiles de pilotage (non démarrés, en cours, en retard,
+  échéance sous 30 jours, réalisés) qui servent de filtre, signal d'échéance
+  calculé à partir de la date de fin prévue (rien n'est affiché pour un projet
+  clos ou sans date), barre de filtres compacte sur une ligne avec puces
+  retirables et compteur de résultats, nouvelle carte projet, et une seconde
+  présentation « Par statut » en colonnes (avancement moyen par colonne).
+- Composants partagés : pastilles d'état, tuiles de pilotage, barre de filtres,
+  puces de filtre.
+- Aucun changement de logique de calcul ni de données.
+
 ## [0.15.0] - 2026-10-26
 
 ### Changé

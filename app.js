@@ -145,7 +145,7 @@ function renderCurrentView() {
   if (currentView === 'overview') renderVueEnsemble();
   else if (currentView === 'priorite') renderVuePriorite(planTree, rafraichirDonnees);
   else if (currentView === 'projets') renderVueProjets(planTree, rafraichirDonnees);
-  else if (currentView === 'synthese') renderVueSynthese(planTree, rafraichirDonnees);
+  else if (currentView === 'synthese') renderVueSynthese(planTree, rafraichirDonnees, naviguerVersPriorite);
 }
 
 async function chargerPlanEtAfficher() {

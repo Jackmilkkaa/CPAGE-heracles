@@ -1,15 +1,26 @@
 // ============================================================================
-// vueProjets.js — Grille de tous les projets, filtres. Le modal d'édition
-// est délégué à projetModal.js (partagé avec vuePriorite.js).
+// vueProjets.js — Portefeuille de projets : tuiles de pilotage (qui servent de
+// filtre), signal d'échéance calculé, filtres compacts avec puces retirables,
+// deux présentations (grille ou colonnes par statut). La fiche détaillée est
+// déléguée à projetModal.js (panneau latéral partagé avec vuePriorite.js).
 // ============================================================================
 import { escapeHtml } from './utils.js';
 import * as M from './mutations.js';
 import { ouvrirModalProjet, STATUTS, labelStatut } from './projetModal.js';
+import { classAvancement } from './calc.js';
 
 let planTree = null;
 let onDataChanged = null;
-let filtres = { q: '', pole: '', statut: '', origine: '', pa: '', boussole: '' };
+let filtres = { q: '', pole: '', statut: '', echeance: '', origine: '', pa: '', boussole: '' };
 let tri = 'defaut'; // 'defaut' | 'avancement_desc' | 'avancement_asc' | 'date_fin_asc' | 'date_fin_desc'
+let vue = 'grille'; // 'grille' | 'statut'
+
+const CLOS = ['realise', 'abandonne', 'clos_partiel'];
+const STATUT_PILL = { non_demarre: 'off', en_cours: 'info', realise: 'ok', clos_partiel: 'warn', abandonne: 'err' };
+const SEUIL_BIENTOT_JOURS = 30;
+
+const ICO_CAL = '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>';
+const ICO_COMPASS = '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>';
 
 function getBoussoleYears() {
   const periode = (planTree.planMeta && planTree.planMeta.periode) || '2025-2030';
@@ -39,6 +50,49 @@ async function muter(fn, successMsg) {
   }
 }
 
+const statutDe = (p) => p.statut || 'non_demarre';
+
+// Échéance calculée à partir de la date de fin prévue. Rien n'est affiché pour un projet
+// clos ou sans date : une date absente n'est ni en retard ni dans les temps.
+function echeance(prj) {
+  if (!prj.date_fin_prevue || CLOS.includes(statutDe(prj))) return null;
+  const fin = new Date(prj.date_fin_prevue + 'T23:59:59');
+  if (isNaN(fin.getTime())) return null;
+  const maintenant = new Date();
+  const jours = Math.ceil((fin - maintenant) / 86400000);
+  if (fin < maintenant) return { type: 'retard', jours: Math.max(1, Math.ceil((maintenant - fin) / 86400000)) };
+  if (jours <= SEUIL_BIENTOT_JOURS) return { type: 'bientot', jours };
+  return null;
+}
+
+function pastilleEcheance(prj) {
+  const e = echeance(prj);
+  if (!e) return '';
+  if (e.type === 'retard') return `<span class="pill err" title="Date de fin prévue dépassée">En retard · ${e.jours} j</span>`;
+  return `<span class="pill warn" title="Date de fin prévue proche">Échéance J-${e.jours}</span>`;
+}
+
+const TUILES = [
+  { cle: 'tous', label: 'Tous les projets', ton: '', test: () => true },
+  { cle: 'non_demarre', label: 'Non démarrés', ton: 'off', test: p => statutDe(p) === 'non_demarre' },
+  { cle: 'en_cours', label: 'En cours', ton: 'info', test: p => statutDe(p) === 'en_cours' },
+  { cle: 'retard', label: 'En retard', ton: 'err', test: p => { const e = echeance(p); return !!e && e.type === 'retard'; } },
+  { cle: 'bientot', label: `Échéance sous ${SEUIL_BIENTOT_JOURS} j`, ton: 'warn', test: p => { const e = echeance(p); return !!e && e.type === 'bientot'; } },
+  { cle: 'realise', label: 'Réalisés', ton: 'ok', test: p => statutDe(p) === 'realise' },
+];
+
+function tuileActive() {
+  if (filtres.echeance) return filtres.echeance;
+  if (filtres.statut) return filtres.statut;
+  return 'tous';
+}
+
+function appliquerTuile(cle) {
+  filtres.statut = ''; filtres.echeance = '';
+  if (cle === 'retard' || cle === 'bientot') filtres.echeance = cle;
+  else if (cle !== 'tous') filtres.statut = cle;
+}
+
 export function renderVueProjets(tree, onChanged) {
   planTree = tree;
   onDataChanged = onChanged;
@@ -52,40 +106,102 @@ export function renderVueProjets(tree, onChanged) {
       <button class="btn btn-primary btn-mini projet-add-btn" id="btn-add-projet">+ Ajouter un projet hors plan</button>
     </div>
 
-    <div class="projets-toolbar">
-      <input type="search" id="f-q" placeholder="Rechercher..." value="${escapeHtml(filtres.q)}">
-      <select id="f-pole"><option value="">Tous pôles</option>${(planTree.poles || []).map(p => `<option value="${p.code}" ${filtres.pole === p.code ? 'selected' : ''}>${escapeHtml(p.libelle)}</option>`).join('')}</select>
-      <select id="f-statut"><option value="">Tous statuts</option>${STATUTS.map(s => `<option value="${s.code}" ${filtres.statut === s.code ? 'selected' : ''}>${s.label}</option>`).join('')}</select>
-      <select id="f-origine">
+    <div class="kpi-strip" id="projets-kpis" style="--kpi-cols: 6"></div>
+
+    <div class="filterbar">
+      <input type="search" class="fb-input fb-search" id="f-q" placeholder="Rechercher un projet…" value="${escapeHtml(filtres.q)}">
+      <select class="fb-select" id="f-pole" aria-label="Pôle responsable"><option value="">Tous les pôles</option>${(planTree.poles || []).map(p => `<option value="${p.code}" ${filtres.pole === p.code ? 'selected' : ''}>${escapeHtml(p.libelle)}</option>`).join('')}</select>
+      <select class="fb-select" id="f-origine" aria-label="Origine">
         <option value="">Toutes origines</option>
         <option value="plan_v1" ${filtres.origine === 'plan_v1' ? 'selected' : ''}>Plan v1</option>
         <option value="hors_plan" ${filtres.origine === 'hors_plan' ? 'selected' : ''}>Hors plan</option>
       </select>
-      <select id="f-pa"><option value="">Toutes PA</option>${planTree.prioritesPlats.map(p => `<option value="${p.id}" ${filtres.pa === p.id ? 'selected' : ''}>#${p.numero} ${escapeHtml(p.intitule.substring(0, 50))}</option>`).join('')}</select>
-      <select id="f-boussole"><option value="">Toutes (boussole ou non)</option>${boussoleYears.map(y => `<option value="${y}" ${String(filtres.boussole) === String(y) ? 'selected' : ''}>🧭 Boussole ${y}</option>`).join('')}</select>
-      <select id="f-tri">
+      <select class="fb-select" id="f-pa" aria-label="Priorité d'action"><option value="">Toutes les PA</option>${planTree.prioritesPlats.map(p => `<option value="${p.id}" ${filtres.pa === p.id ? 'selected' : ''}>#${p.numero} ${escapeHtml(p.intitule.substring(0, 50))}</option>`).join('')}</select>
+      <select class="fb-select" id="f-boussole" aria-label="Boussole"><option value="">Boussole : toutes</option>${boussoleYears.map(y => `<option value="${y}" ${String(filtres.boussole) === String(y) ? 'selected' : ''}>Boussole ${y}</option>`).join('')}</select>
+      <span class="fb-spacer"></span>
+      <select class="fb-select" id="f-tri" aria-label="Tri">
         <option value="defaut" ${tri === 'defaut' ? 'selected' : ''}>Tri par défaut</option>
         <option value="avancement_desc" ${tri === 'avancement_desc' ? 'selected' : ''}>Avancement décroissant</option>
         <option value="avancement_asc" ${tri === 'avancement_asc' ? 'selected' : ''}>Avancement croissant</option>
-        <option value="date_fin_asc" ${tri === 'date_fin_asc' ? 'selected' : ''}>Date de fin prévue, plus proche d'abord</option>
-        <option value="date_fin_desc" ${tri === 'date_fin_desc' ? 'selected' : ''}>Date de fin prévue, plus lointaine d'abord</option>
+        <option value="date_fin_asc" ${tri === 'date_fin_asc' ? 'selected' : ''}>Échéance la plus proche</option>
+        <option value="date_fin_desc" ${tri === 'date_fin_desc' ? 'selected' : ''}>Échéance la plus lointaine</option>
       </select>
-      <div class="projets-count" id="projets-count"></div>
+      <div class="segment-control" id="vue-switch" role="group" aria-label="Présentation">
+        <button data-vue="grille" class="${vue === 'grille' ? 'active' : ''}">Grille</button>
+        <button data-vue="statut" class="${vue === 'statut' ? 'active' : ''}">Par statut</button>
+      </div>
     </div>
+    <div class="filter-meta" id="projets-meta"></div>
 
     <div id="projets-grid-slot"></div>
   `;
 
   document.getElementById('btn-add-projet').addEventListener('click', ajouterProjet);
-  document.getElementById('f-q').addEventListener('input', (e) => { filtres.q = e.target.value; renderGrid(); });
-  document.getElementById('f-pole').addEventListener('change', (e) => { filtres.pole = e.target.value; renderGrid(); });
-  document.getElementById('f-statut').addEventListener('change', (e) => { filtres.statut = e.target.value; renderGrid(); });
-  document.getElementById('f-origine').addEventListener('change', (e) => { filtres.origine = e.target.value; renderGrid(); });
-  document.getElementById('f-pa').addEventListener('change', (e) => { filtres.pa = e.target.value; renderGrid(); });
-  document.getElementById('f-boussole').addEventListener('change', (e) => { filtres.boussole = e.target.value; renderGrid(); });
-  document.getElementById('f-tri').addEventListener('change', (e) => { tri = e.target.value; renderGrid(); });
+  document.getElementById('f-q').addEventListener('input', (e) => { filtres.q = e.target.value; rafraichir(); });
+  document.getElementById('f-pole').addEventListener('change', (e) => { filtres.pole = e.target.value; rafraichir(); });
+  document.getElementById('f-origine').addEventListener('change', (e) => { filtres.origine = e.target.value; rafraichir(); });
+  document.getElementById('f-pa').addEventListener('change', (e) => { filtres.pa = e.target.value; rafraichir(); });
+  document.getElementById('f-boussole').addEventListener('change', (e) => { filtres.boussole = e.target.value; rafraichir(); });
+  document.getElementById('f-tri').addEventListener('change', (e) => { tri = e.target.value; rafraichir(); });
+  document.querySelectorAll('#vue-switch button').forEach(b => b.addEventListener('click', () => {
+    vue = b.dataset.vue;
+    document.querySelectorAll('#vue-switch button').forEach(x => x.classList.toggle('active', x === b));
+    rafraichir();
+  }));
 
+  rafraichir();
+}
+
+function rafraichir() {
+  renderKpis();
+  renderMeta();
   renderGrid();
+}
+
+function renderKpis() {
+  const tous = planTree.projetsPlats;
+  const actif = tuileActive();
+  document.getElementById('projets-kpis').innerHTML = TUILES.map(t => {
+    const n = tous.filter(t.test).length;
+    return `<button class="kpi-tile ${actif === t.cle ? 'active' : ''}" data-tuile="${t.cle}" aria-pressed="${actif === t.cle}">
+      <span class="kpi-label">${t.ton ? `<span class="kpi-dot ${t.ton}"></span>` : ''}${t.label}</span>
+      <span class="kpi-value">${n}</span>
+      <span class="kpi-sub">${t.cle === 'tous' ? 'dans le portefeuille' : (tous.length ? Math.round(100 * n / tous.length) + ' % du portefeuille' : '')}</span>
+    </button>`;
+  }).join('');
+  document.querySelectorAll('#projets-kpis [data-tuile]').forEach(b => b.addEventListener('click', () => {
+    const cle = b.dataset.tuile;
+    appliquerTuile(tuileActive() === cle ? 'tous' : cle);
+    rafraichir();
+  }));
+}
+
+function chipsActifs() {
+  const chips = [];
+  const t = TUILES.find(x => x.cle === tuileActive());
+  if (tuileActive() !== 'tous') chips.push(['tuile', t.label]);
+  if (filtres.pole) { const p = (planTree.poles || []).find(x => x.code === filtres.pole); chips.push(['pole', p ? p.libelle : filtres.pole]); }
+  if (filtres.origine) chips.push(['origine', filtres.origine === 'hors_plan' ? 'Hors plan' : 'Plan v1']);
+  if (filtres.pa) { const pa = planTree.prioritesPlats.find(x => x.id === filtres.pa); chips.push(['pa', pa ? '#' + pa.numero : filtres.pa]); }
+  if (filtres.boussole) chips.push(['boussole', 'Boussole ' + filtres.boussole]);
+  if (filtres.q) chips.push(['q', '« ' + filtres.q + ' »']);
+  return chips;
+}
+
+function renderMeta() {
+  const n = projetsFiltres().length;
+  const chips = chipsActifs();
+  document.getElementById('projets-meta').innerHTML = `
+    <div class="chips">${chips.map(([k, l]) => `<span class="filter-chip">${escapeHtml(l)}<button data-clear="${k}" aria-label="Retirer le filtre">✕</button></span>`).join('')}${chips.length ? '<button class="link-btn" data-clear="all">Réinitialiser</button>' : ''}</div>
+    <div class="filter-count">${n} projet${n > 1 ? 's' : ''} affiché${n > 1 ? 's' : ''} sur ${planTree.projetsPlats.length}</div>
+  `;
+  document.querySelectorAll('#projets-meta [data-clear]').forEach(b => b.addEventListener('click', () => {
+    const k = b.dataset.clear;
+    if (k === 'all') filtres = { q: '', pole: '', statut: '', echeance: '', origine: '', pa: '', boussole: '' };
+    else if (k === 'tuile') { filtres.statut = ''; filtres.echeance = ''; }
+    else filtres[k] = '';
+    renderVueProjets(planTree, onDataChanged);
+  }));
 }
 
 function formatDateFr(isoDate) {
@@ -101,9 +217,8 @@ function trierProjets(projets) {
   } else if (tri === 'avancement_asc') {
     projets.sort((a, b) => (a.avancement_pct || 0) - (b.avancement_pct || 0));
   } else if (tri === 'date_fin_asc' || tri === 'date_fin_desc') {
-    // Les projets sans date de fin prévue sont toujours relégués en fin de
-    // liste, quel que soit le sens du tri : une date manquante n'est ni "la
-    // plus proche" ni "la plus lointaine", elle n'est juste pas comparable.
+    // Les projets sans date de fin prévue sont toujours relégués en fin de liste,
+    // quel que soit le sens du tri : une date manquante n'est pas comparable.
     projets.sort((a, b) => {
       const da = a.date_fin_prevue, db = b.date_fin_prevue;
       if (!da && !db) return 0;
@@ -114,16 +229,15 @@ function trierProjets(projets) {
   }
 }
 
-function renderGrid() {
-  const slot = document.getElementById('projets-grid-slot');
+function projetsFiltres() {
   let projets = planTree.projetsPlats.slice();
-
   if (filtres.q) {
     const q = filtres.q.toLowerCase();
     projets = projets.filter(p => (p.intitule || '').toLowerCase().includes(q) || (p.description || '').toLowerCase().includes(q));
   }
   if (filtres.pole) projets = projets.filter(p => p.pole_responsable === filtres.pole);
-  if (filtres.statut) projets = projets.filter(p => (p.statut || 'non_demarre') === filtres.statut);
+  if (filtres.statut) projets = projets.filter(p => statutDe(p) === filtres.statut);
+  if (filtres.echeance) projets = projets.filter(p => { const e = echeance(p); return !!e && e.type === filtres.echeance; });
   if (filtres.origine) projets = projets.filter(p => p.origine === filtres.origine);
   if (filtres.pa) {
     const pa = planTree.prioritesPlats.find(p => p.id === filtres.pa);
@@ -133,41 +247,74 @@ function renderGrid() {
     const year = parseInt(filtres.boussole);
     projets = projets.filter(p => (p.boussole_annees || []).includes(year));
   }
-
   trierProjets(projets);
+  return projets;
+}
 
-  document.getElementById('projets-count').textContent = `${projets.length} projet${projets.length > 1 ? 's' : ''} affiché${projets.length > 1 ? 's' : ''}`;
+function renderGrid() {
+  const slot = document.getElementById('projets-grid-slot');
+  const projets = projetsFiltres();
 
   if (projets.length === 0) {
-    slot.innerHTML = '<div style="text-align:center; padding:2rem; color:var(--gris-moyen)">Aucun projet ne correspond à ce filtre.</div>';
+    slot.innerHTML = '<div class="projets-empty">Aucun projet ne correspond à ces filtres.</div>';
     return;
   }
 
-  slot.innerHTML = '<div class="projets-grid">' + projets.map(renderTile).join('') + '</div>';
+  if (vue === 'statut') {
+    const colonnes = [
+      { label: 'Non démarrés', pill: 'off', statuts: ['non_demarre'] },
+      { label: 'En cours', pill: 'info', statuts: ['en_cours'] },
+      { label: 'Réalisés', pill: 'ok', statuts: ['realise'] },
+      { label: 'Clos ou abandonnés', pill: 'warn', statuts: ['clos_partiel', 'abandonne'] },
+    ];
+    slot.innerHTML = '<div class="kb-board">' + colonnes.map(c => {
+      const items = projets.filter(p => c.statuts.includes(statutDe(p)));
+      const moy = items.length ? Math.round(items.reduce((s, p) => s + (p.avancement_pct || 0), 0) / items.length) : null;
+      return `<section class="kb-col" aria-label="${c.label}">
+        <header class="kb-head"><span class="pill ${c.pill}">${c.label}</span><span class="kb-count">${items.length}</span>${moy !== null ? `<span class="kb-avg" title="Avancement moyen">moy. ${moy} %</span>` : ''}</header>
+        <div class="kb-body">${items.length ? items.map(p => renderTile(p, true)).join('') : '<div class="kb-empty">Aucun projet</div>'}</div>
+      </section>`;
+    }).join('') + '</div>';
+  } else {
+    slot.innerHTML = '<div class="projets-grid">' + projets.map(p => renderTile(p, false)).join('') + '</div>';
+  }
 
   slot.querySelectorAll('.projet-tile').forEach(tile => {
-    tile.addEventListener('click', () => ouvrirModalProjet(tile.dataset.id, planTree, onDataChanged));
+    const ouvrir = () => ouvrirModalProjet(tile.dataset.id, planTree, onDataChanged);
+    tile.addEventListener('click', ouvrir);
+    tile.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); ouvrir(); } });
   });
 }
 
-function renderTile(prj) {
-  const st = prj.statut || 'non_demarre';
+function renderTile(prj, compact) {
+  const st = statutDe(prj);
   const av = prj.avancement_pct || 0;
   const paOrig = prj.pa_origine ? planTree.prioritesPlats.find(p => p.id === prj.pa_origine) : null;
-  const boussole = (prj.boussole_annees || []).length > 0 ? `<span class="boussole-badge" title="Boussole ${prj.boussole_annees.join(', ')}">🧭 ${prj.boussole_annees.join(', ')}</span>` : '';
-  const cls = av < 25 ? 'av-rouge' : av < 50 ? 'av-orange' : av < 75 ? 'av-jaunevert' : 'av-vert';
+  const boussole = (prj.boussole_annees || []).length > 0
+    ? `<span class="boussole-badge" title="Boussole ${prj.boussole_annees.join(', ')}">${ICO_COMPASS}${prj.boussole_annees.join(', ')}</span>` : '';
+  const hors = prj.origine === 'hors_plan';
   return `
-    <div class="projet-tile ${prj.origine === 'hors_plan' ? 'hors-plan' : ''}" data-id="${prj.id}">
-      <div class="prj-id">${escapeHtml(prj.id)}${prj.origine === 'hors_plan' ? ' · hors plan' : ''}</div>
-      <div class="prj-title">${escapeHtml(prj.intitule || '(sans titre)')}${boussole}</div>
+    <article class="projet-tile ${compact ? 'compact' : ''} ${hors ? 'hors-plan' : ''}" data-id="${prj.id}" tabindex="0" role="button" aria-label="Ouvrir le projet ${escapeHtml(prj.intitule || prj.id)}">
+      <div class="prj-head">
+        <span class="prj-id">${escapeHtml(prj.id)}</span>
+        ${compact ? '' : `<span class="pill ${STATUT_PILL[st]}">${labelStatut(st)}</span>`}
+      </div>
+      <div class="prj-title">${escapeHtml(prj.intitule || '(sans titre)')}</div>
       <div class="prj-meta">
         ${prj.pole_responsable ? `<span class="prj-badge pole">${escapeHtml(prj.pole_responsable)}</span>` : ''}
-        ${paOrig ? `<span class="prj-badge pa">#${paOrig.numero}</span>` : ''}
-        ${prj.date_fin_prevue ? `<span class="prj-badge date" title="Date de fin prévue">📅 ${formatDateFr(prj.date_fin_prevue)}</span>` : ''}
+        ${paOrig ? `<span class="prj-badge pa" title="${escapeHtml(paOrig.intitule)}">#${paOrig.numero}</span>` : ''}
+        ${hors ? '<span class="prj-badge hors">Hors plan</span>' : ''}
+        ${boussole}
       </div>
-      <div class="prj-statut"><span class="statut-pill ${st}">${labelStatut(st)}</span><span style="font-family:monospace; font-weight:700; margin-left:auto">${av}%</span></div>
-      <div class="prj-bar"><div class="prj-bar-fill" style="width:${av}%; background:var(--${cls})"></div></div>
-    </div>
+      <div class="prj-foot">
+        <span class="prj-bar"><span class="prj-bar-fill ${classAvancement(av)}" style="width:${av}%"></span></span>
+        <span class="prj-pct">${av} %</span>
+      </div>
+      <div class="prj-due">
+        ${prj.date_fin_prevue ? `<span class="prj-date" title="Date de fin prévue">${ICO_CAL}${formatDateFr(prj.date_fin_prevue)}</span>` : '<span class="prj-date muted">Pas de date de fin</span>'}
+        ${pastilleEcheance(prj)}
+      </div>
+    </article>
   `;
 }
 
