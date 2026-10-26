@@ -1,6 +1,6 @@
 import { getSession, signIn, signOut, getMonProfil } from './client.js';
 import { chargerPlanComplet } from './data.js';
-import { avancementPriorite, avancementAxe, avancementOrientation, avancementGlobal, fmtPct } from './calc.js';
+import { avancementPriorite, avancementAxe, avancementOrientation, avancementGlobal, fmtPct, classAvancement } from './calc.js';
 import { renderRadar, renderGauges } from './radar.js';
 import { escapeHtml } from './utils.js';
 import { renderVuePriorite, irVersPriorite } from './vuePriorite.js';
@@ -193,19 +193,21 @@ function renderVueEnsemble() {
   // que d'afficher un écran vide.
   if (overviewScope && !orient) overviewScope = null;
 
+  const tileBar = (v) => `<div class="tile-bar"><span class="${classAvancement(v)}" style="width:${v === null || v === undefined ? 0 : Math.max(0, Math.min(100, v))}%"></span></div>`;
+  const globalValue = avancementGlobal(planTree.orientations);
   const scopeTiles = [
     `<button class="orient-tile ${!overviewScope ? 'active' : ''}" data-orient="">
-      <div class="code">Global</div>
+      <div class="tile-top"><span class="code">Global</span><span class="val ${globalValue === null ? 'nc' : ''}">${fmtPct(globalValue)}</span></div>
       <div class="title">Toutes orientations</div>
-      <div class="val">${fmtPct(avancementGlobal(planTree.orientations))}</div>
+      ${tileBar(globalValue)}
     </button>`,
     ...planTree.orientations.map(o => {
       const av = avancementOrientation(o);
       return `
         <button class="orient-tile ${o.id === overviewScope ? 'active' : ''}" data-orient="${o.id}">
-          <div class="code">${escapeHtml(o.id)}</div>
+          <div class="tile-top"><span class="code">${escapeHtml(o.id)}</span><span class="val ${av.value === null ? 'nc' : ''}">${fmtPct(av.value)}</span></div>
           <div class="title">${escapeHtml(o.intitule)}</div>
-          <div class="val ${av.value === null ? 'nc' : ''}">${fmtPct(av.value)}</div>
+          ${tileBar(av.value)}
         </button>
       `;
     }),
@@ -220,7 +222,7 @@ function renderVueEnsemble() {
     <div class="overview-header">
       <div>
         <h2>${orient ? escapeHtml(orient.id) + ' · ' + escapeHtml(orient.intitule) : "Vue d'ensemble du plan"}</h2>
-        <div class="subtitle">${orient ? "Avancement de l'orientation" : 'Avancement global'} : <strong>${fmtPct(orient ? avancementOrientation(orient).value : avancementGlobal(planTree.orientations))}</strong></div>
+        <div class="subtitle">${orient ? `${orient.axes.length} axes · ${nbPriorites} priorités d'action` : `${planTree.orientations.length} orientations · ${planTree.axesPlats.length} axes · ${planTree.prioritesPlats.length} priorités d'action`}</div>
       </div>
       <div class="segment-control">
         <button class="${overviewMode === 'axe' ? 'active' : ''}" data-mode="axe">Par axe (${nbAxes})</button>
@@ -235,11 +237,10 @@ function renderVueEnsemble() {
       <p style="margin-bottom:0">${escapeHtml(orient.description || '')}</p>
     </div>` : (m.vision || m.mission || m.ambition) ? `
     <div class="vision-block">
-      <h3>Vision · Mission · Ambition</h3>
       <div class="vision-grid">
-        <p>${escapeHtml(m.vision || '')}</p>
-        <p>${escapeHtml(m.mission || '')}</p>
-        <p>${escapeHtml(m.ambition || '')}</p>
+        <div><span class="vision-label">Vision</span><p>${escapeHtml(m.vision || '')}</p></div>
+        <div><span class="vision-label">Mission</span><p>${escapeHtml(m.mission || '')}</p></div>
+        <div><span class="vision-label">Ambition</span><p>${escapeHtml(m.ambition || '')}</p></div>
       </div>
     </div>` : ''}
 

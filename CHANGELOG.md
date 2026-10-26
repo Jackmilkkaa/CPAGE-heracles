@@ -3,6 +3,28 @@
 Toutes les évolutions notables de ce projet sont documentées ici.
 Convention : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) + [semver](https://semver.org/lang/fr/).
 
+## [0.14.0] - 2026-10-26
+
+### Changé
+- **Habillage CPage** : l'app adopte le design system applicatif CPage
+  (tokens `--cpage-*`, Inter et DM Mono embarquées dans `fonts/`, logo CPage
+  dans l'en-tête). Les anciens noms de variables CSS sont conservés comme
+  alias : les vues existantes suivent la charte sans réécriture.
+- En-tête bleu nuit avec pastille d'avancement global, barre d'onglets à
+  icônes avec soulignement orange sur l'onglet actif.
+- Vue d'ensemble : tuiles d'orientation avec mini-barre de progression,
+  bandeau Vision / Mission / Ambition à libellés distincts, jauges et radar
+  aux couleurs de la charte, radar qui reste visible pendant le défilement.
+  Le sous-titre redondant (avancement global) est remplacé par le décompte
+  orientations / axes / priorités.
+- L'orange est réservé à l'action et à la sélection (règle du design
+  system) : suppression de l'orange décoratif (badges, bordures de cartes,
+  pastilles de statut), pastilles de PA et d'axe neutres, override manuel
+  en ton « information » à la place du violet.
+- Synthèse chiffrée : en-tête de tableau allégé et collant, chiffres en
+  police tabulaire.
+- Aucun changement de logique ni de données.
+
 ## [0.13.1] - 2026-08-24
 
 ### Corrigé

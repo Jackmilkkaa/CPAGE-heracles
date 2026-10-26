@@ -155,7 +155,7 @@ function appliquerFiltre() {
   });
 
   const statLabel = { atteint: 'Atteint', cours: 'En cours', nr: 'Non renseigné' };
-  const statColor = { atteint: 'var(--av-vert)', cours: 'var(--av-orange)', nr: 'var(--av-nc)' };
+  const statColor = { atteint: 'var(--av-vert)', cours: 'var(--cpage-bleu-mid)', nr: 'var(--av-nc)' };
 
   tbody.innerHTML = rows.map(r => {
     const isOpen = expanded.has(r.id);
