@@ -47,7 +47,7 @@ function getBoussoleYears(planTree) {
 }
 
 // Point d'entrée principal, appelé depuis n'importe quelle vue.
-export function ouvrirModalProjet(projetId, planTree, onDataChanged) {
+export function ouvrirModalProjet(projetId, planTree, onDataChanged, options = {}) {
   const prj = planTree.projetsPlats.find(p => p.id === projetId);
   if (!prj) return;
   const paOrig = prj.pa_origine ? planTree.prioritesPlats.find(p => p.id === prj.pa_origine) : null;
@@ -141,6 +141,22 @@ export function ouvrirModalProjet(projetId, planTree, onDataChanged) {
   });
 
   wireImpactsSection(prj, planTree, onDataChanged);
+
+  // Rattachement à une PA (dépôt d'une carte sur une PA) : on ouvre le bloc de cette PA
+  // dans la section Impacts et on y amène l'utilisateur, sans rien modifier à sa place.
+  if (options.focusPa) {
+    const pa = planTree.prioritesPlats.find(p => p.id === options.focusPa);
+    if (pa) {
+      openImpactPas.add(pa.id);
+      const container = document.getElementById('impacts-container');
+      container.innerHTML = renderImpactsSection(prj, planTree);
+      wireImpactsSection(prj, planTree, onDataChanged);
+      const help = document.querySelector('.impacts-section .impacts-help');
+      if (help) help.innerHTML = `<strong>Rattachement à #${pa.numero}</strong> : choisis l'objectif concerné et l'intensité d'impact. Rien n'est modifié tant que tu n'as pas cliqué.`;
+      const hdr = container.querySelector(`[data-toggle-pa="${pa.id}"]`);
+      if (hdr) { hdr.classList.add('flash'); hdr.scrollIntoView({ block: 'center' }); }
+    }
+  }
 }
 
 function renderImpactsSection(prj, planTree) {

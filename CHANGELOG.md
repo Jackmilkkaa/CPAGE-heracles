@@ -3,6 +3,31 @@
 Toutes les évolutions notables de ce projet sont documentées ici.
 Convention : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) + [semver](https://semver.org/lang/fr/).
 
+## [0.17.0] - 2026-10-26
+
+### Ajouté
+- **Projets : présentations en colonnes et déplacement des cartes.** Un sélecteur
+  de présentation (Grille, Par statut, Par pôle, Par orientation, Par PA).
+  - Par statut : 5 colonnes (une par statut). Par pôle : une colonne par pôle
+    plus « Sans pôle ».
+  - **Glisser-déposer** d'une carte vers une autre colonne. Vers un autre pôle :
+    changement direct du responsable. Vers un autre statut : une boîte demande
+    l'avancement (prérempli selon la destination : 100 % pour Réalisé, 0 % pour
+    Non démarré, l'actuel sinon) et la date de fin réelle pour Réalisé. Quitter
+    « Réalisé » efface la date de fin réelle, et la boîte le dit. Seul le
+    passage Non démarré vers En cours est direct, sans saisie.
+  - **Annulation** pendant 7 secondes après chaque déplacement validé.
+  - **Menu « Déplacer vers… »** (bouton ⋯ sur la carte) pour le clavier et le
+    tactile, qui ouvre la même boîte.
+  - Par orientation : lecture seule, cartes regroupées par PA dans chaque
+    colonne. Par PA : une section par PA, un projet est classé dans sa PA native
+    (ou, pour un projet hors plan, dans la PA où son impact cumulé est le plus fort).
+  - **Rattachement** : déposer une carte sur une PA ouvre la fiche du projet sur
+    la section Impacts, bloc de cette PA ouvert et mis en évidence. Rien n'est
+    modifié avant que l'utilisateur choisisse l'objectif et le poids.
+  - Les profils « lecteur » ne peuvent ni glisser, ni déplacer.
+- Les colonnes défilent horizontalement quand elles sont nombreuses.
+
 ## [0.16.0] - 2026-10-26
 
 ### Changé

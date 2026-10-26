@@ -4,7 +4,7 @@ import { avancementPriorite, avancementAxe, avancementOrientation, avancementGlo
 import { renderRadar, renderGauges } from './radar.js';
 import { escapeHtml } from './utils.js';
 import { renderVuePriorite, irVersPriorite } from './vuePriorite.js';
-import { renderVueProjets } from './vueProjets.js';
+import { renderVueProjets, setPeutEditer } from './vueProjets.js';
 import { renderVueSynthese } from './vueSynthese.js';
 
 const loginScreen = document.getElementById('login-screen');
@@ -78,6 +78,7 @@ async function render() {
   contentScreen.hidden = false;
 
   const profil = await getMonProfil();
+  setPeutEditer(!profil || profil.role !== 'lecteur');
   userZone.innerHTML = `
     <span>${escapeHtml(profil ? profil.email + ' · ' + profil.role : session.user.email)}</span>
     <button id="logout-btn">Déconnexion</button>
