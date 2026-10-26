@@ -9,7 +9,7 @@
 // arrivera avec la Vue Projets. Ici, seuls statut/avancement/impacts sont
 // éditables en ligne, ce qui couvre l'essentiel de l'usage courant.
 // ============================================================================
-import { avancementObjectif, avancementPriorite, isProjetActif, fmtPct, classAvancement } from './calc.js';
+import { avancementObjectif, avancementPriorite, avancementOrientation, isProjetActif, fmtPct, classAvancement } from './calc.js';
 import { renderRadar, renderGauges } from './radar.js';
 import { escapeHtml } from './utils.js';
 import * as M from './mutations.js';
@@ -52,6 +52,38 @@ async function muter(fn, successMsg) {
   }
 }
 
+// Orientations repliées dans l'arbre de navigation (conservé d'un rendu à l'autre)
+const treeCollapsed = new Set();
+
+function renderTree(activePaId) {
+  return planTree.orientations.map(o => {
+    const avO = avancementOrientation(o);
+    const collapsed = treeCollapsed.has(o.id);
+    const axes = o.axes.map(ax => `
+      <div class="tree-axe">
+        <div class="tree-axe-title">${escapeHtml(ax.intitule)}</div>
+        ${ax.priorites.map(p => {
+          const av = avancementPriorite(p);
+          return `<button class="tree-pa" data-tree-pa="${p.id}" ${p.id === activePaId ? 'aria-current="true"' : ''} title="${escapeHtml(p.intitule)}">
+            <span class="dot ${classAvancement(av.value)}"></span>
+            <span class="n">#${p.numero}</span>
+            <span class="t">${escapeHtml(p.intitule)}</span>
+            <span class="v">${fmtPct(av.value)}</span>
+          </button>`;
+        }).join('')}
+      </div>`).join('');
+    return `
+      <div class="tree-group">
+        <button class="tree-orient" data-tree-orient="${o.id}" aria-expanded="${!collapsed}">
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+          <span class="name"><span class="code">${escapeHtml(o.id)}</span> ${escapeHtml(o.intitule)}</span>
+          <span class="tree-val">${fmtPct(avO.value)}</span>
+        </button>
+        <div class="tree-body" ${collapsed ? 'hidden' : ''}>${axes}</div>
+      </div>`;
+  }).join('');
+}
+
 export function renderVuePriorite(tree, onChanged) {
   planTree = tree;
   onDataChanged = onChanged;
@@ -67,15 +99,24 @@ export function renderVuePriorite(tree, onChanged) {
   const orient = axe ? axe._orientation : null;
   const av = avancementPriorite(pa);
 
-  const options = planTree.prioritesPlats.map((p, i) =>
-    `<option value="${i}" ${i === currentIndex ? 'selected' : ''}>#${p.numero} · ${escapeHtml(p.intitule.substring(0, 90))}${p.intitule.length > 90 ? '…' : ''}</option>`
-  ).join('');
+  const prevTreeScroll = slot.querySelector('.pa-tree') ? slot.querySelector('.pa-tree').scrollTop : null;
+  if (orient) treeCollapsed.delete(orient.id);
 
   slot.innerHTML = `
-    <div class="pa-nav">
-      <button class="pa-nav-arrow" id="pa-prev" ${currentIndex === 0 ? 'disabled' : ''} aria-label="Précédent">◀</button>
-      <select id="pa-select">${options}</select>
-      <button class="pa-nav-arrow" id="pa-next" ${currentIndex === planTree.prioritesPlats.length - 1 ? 'disabled' : ''} aria-label="Suivant">▶</button>
+    <div class="pa-layout">
+    <aside class="pa-tree" aria-label="Navigation des priorités d'action">${renderTree(pa.id)}</aside>
+    <div class="pa-content">
+    <div class="pa-topbar">
+      <nav class="breadcrumb" aria-label="Fil d'Ariane">
+        <span>Priorités d'action</span>
+        ${orient ? `<span class="sep">›</span><span>${escapeHtml(orient.id)} · ${escapeHtml(orient.intitule)}</span>` : ''}
+        ${axe ? `<span class="sep">›</span><span class="current">${escapeHtml(axe.intitule)}</span>` : ''}
+      </nav>
+      <div class="pa-stepper">
+        <button class="pa-nav-arrow" id="pa-prev" ${currentIndex === 0 ? 'disabled' : ''} aria-label="Priorité précédente">‹</button>
+        <span class="pa-step-count">${currentIndex + 1} / ${planTree.prioritesPlats.length}</span>
+        <button class="pa-nav-arrow" id="pa-next" ${currentIndex === planTree.prioritesPlats.length - 1 ? 'disabled' : ''} aria-label="Priorité suivante">›</button>
+      </div>
     </div>
 
     <div class="pa-header">
@@ -83,10 +124,6 @@ export function renderVuePriorite(tree, onChanged) {
         <div class="pa-num">#${pa.numero}</div>
         <div>
           <div class="pa-titre">${escapeHtml(pa.intitule)}</div>
-          <div class="pa-badges">
-            ${orient ? `<span class="badge orient">${escapeHtml(orient.id)} · ${escapeHtml(orient.intitule)}</span>` : ''}
-            ${axe ? `<span class="badge axe">${escapeHtml(axe.intitule)}</span>` : ''}
-          </div>
         </div>
       </div>
     </div>
@@ -121,11 +158,31 @@ export function renderVuePriorite(tree, onChanged) {
     </div>
 
     <div class="objectifs-list" id="objectifs-slot"></div>
+    </div>
+    </div>
   `;
 
   document.getElementById('pa-prev').addEventListener('click', () => { currentPrioriteId = planTree.prioritesPlats[currentIndex - 1].id; renderVuePriorite(planTree, onDataChanged); });
   document.getElementById('pa-next').addEventListener('click', () => { currentPrioriteId = planTree.prioritesPlats[currentIndex + 1].id; renderVuePriorite(planTree, onDataChanged); });
-  document.getElementById('pa-select').addEventListener('change', (e) => { currentPrioriteId = planTree.prioritesPlats[parseInt(e.target.value)].id; renderVuePriorite(planTree, onDataChanged); });
+  slot.querySelectorAll('[data-tree-pa]').forEach(b => b.addEventListener('click', () => {
+    currentPrioriteId = b.dataset.treePa;
+    renderVuePriorite(planTree, onDataChanged);
+    window.scrollTo({ top: 0 });
+  }));
+  slot.querySelectorAll('[data-tree-orient]').forEach(b => b.addEventListener('click', () => {
+    const open = b.getAttribute('aria-expanded') === 'true';
+    b.setAttribute('aria-expanded', String(!open));
+    b.nextElementSibling.hidden = open;
+    if (open) treeCollapsed.add(b.dataset.treeOrient); else treeCollapsed.delete(b.dataset.treeOrient);
+  }));
+  const treeEl = slot.querySelector('.pa-tree');
+  if (treeEl) {
+    if (prevTreeScroll !== null) treeEl.scrollTop = prevTreeScroll;
+    const act = treeEl.querySelector('[aria-current="true"]');
+    if (act && (act.offsetTop < treeEl.scrollTop || act.offsetTop + act.offsetHeight > treeEl.scrollTop + treeEl.clientHeight)) {
+      treeEl.scrollTop = Math.max(0, act.offsetTop - treeEl.clientHeight / 3);
+    }
+  }
 
   const ficheBtn = document.getElementById('btn-fiche-complete');
   if (ficheBtn) {

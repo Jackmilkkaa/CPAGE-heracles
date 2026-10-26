@@ -3,6 +3,23 @@
 Toutes les évolutions notables de ce projet sont documentées ici.
 Convention : [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) + [semver](https://semver.org/lang/fr/).
 
+## [0.15.0] - 2026-10-26
+
+### Changé
+- **Priorités d'action : arbre de navigation** Orientation > Axe > PA à la
+  place du sélecteur déroulant. Panneau fixe à gauche, groupes repliables
+  (l'état de repli est conservé d'une navigation à l'autre), pastille de
+  niveau d'avancement et pourcentage sur chaque PA, PA courante surlignée.
+  Fil d'Ariane et pas-à-pas précédent / suivant (n / 24) en haut de la fiche.
+  En dessous de 1100 px, l'arbre passe au-dessus de la fiche.
+- **Fiche projet en panneau latéral** au lieu d'une fenêtre modale : le
+  contexte reste visible derrière, fermeture par Échap, clic sur le fond ou
+  bouton, focus placé sur la fermeture à l'ouverture.
+- Colonnes « Projets et actions clés » : correction du débordement du bouton
+  « Détails » sur les cartes étroites (même cause que le radar, grille CSS
+  dimensionnée par son contenu).
+- Suppression des derniers aplats orange décoratifs dans le panneau projet.
+
 ## [0.14.0] - 2026-10-26
 
 ### Changé

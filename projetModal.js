@@ -56,9 +56,14 @@ export function ouvrirModalProjet(projetId, planTree, onDataChanged) {
   backdrop.className = 'modal-backdrop';
   backdrop.id = 'projet-modal';
   backdrop.addEventListener('click', (e) => { if (e.target === backdrop) backdrop.remove(); });
+  const onKey = (e) => {
+    if (!document.body.contains(backdrop)) { document.removeEventListener('keydown', onKey); return; }
+    if (e.key === 'Escape') { backdrop.remove(); document.removeEventListener('keydown', onKey); }
+  };
+  document.addEventListener('keydown', onKey);
 
   backdrop.innerHTML = `
-    <div class="modal-panel">
+    <div class="modal-panel" role="dialog" aria-modal="true" aria-label="Fiche projet">
       <div class="modal-header">
         <div>
           <h3>${escapeHtml(prj.intitule || 'Projet')}</h3>
@@ -109,6 +114,7 @@ export function ouvrirModalProjet(projetId, planTree, onDataChanged) {
   document.body.appendChild(backdrop);
 
   document.getElementById('btn-close-modal').addEventListener('click', () => backdrop.remove());
+  document.getElementById('btn-close-modal').focus();
   const delBtn = document.getElementById('btn-delete-projet');
   if (delBtn) delBtn.addEventListener('click', () => supprimerProjet(prj, onDataChanged));
 
